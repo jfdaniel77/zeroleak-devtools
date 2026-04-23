@@ -88,4 +88,3 @@ Contributions are welcome! If you want to help improve this project:
 ## License
 
 This project is released under the MIT License.
-# zeroleak-devtools
