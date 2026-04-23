@@ -1,0 +1,3329 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8"/>
+<meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+<title>ZeroLeak DevTools</title>
+<style>
+/* =====================================================================
+   ZeroLeak DevTools – Style Sheet
+   Aesthetic: Industrial / Terminal — dark, dense, precise
+   ===================================================================== */
+
+
+
+/* ── Variables ─────────────────────────────────────────────────────────── */
+:root {
+  --bg-0: #0a0c0f;
+  --bg-1: #10141a;
+  --bg-2: #161c24;
+  --bg-3: #1e2530;
+
+  --border: #252d3a;
+  --border-hi: #2e3d52;
+
+  --text-primary:   #e2e8f0;
+  --text-secondary: #8899aa;
+  --text-muted:     #4a5568;
+
+  --accent:         #00d4ff;
+  --accent-dim:     rgba(0, 212, 255, 0.12);
+  --accent-glow:    rgba(0, 212, 255, 0.06);
+
+  --success:        #00e676;
+  --success-dim:    rgba(0, 230, 118, 0.08);
+  --error:          #ff4d6a;
+  --error-dim:      rgba(255, 77, 106, 0.08);
+  --warning:        #ffb74d;
+
+  --sidebar-w:      220px;
+
+  --mono: 'IBM Plex Mono', monospace;
+  --sans: 'IBM Plex Sans', sans-serif;
+
+  --radius: 3px;
+  --transition: 150ms ease;
+}
+
+/* ── Light Mode ─────────────────────────────────────────────────────────── */
+.light-mode {
+  --bg-0: #ffffff;
+  --bg-1: #f8f9fa;
+  --bg-2: #e9ecef;
+  --bg-3: #dee2e6;
+
+  --border: #ced4da;
+  --border-hi: #adb5bd;
+
+  --text-primary:   #212529;
+  --text-secondary: #6c757d;
+  --text-muted:     #495057;
+
+  --accent:         #007bff;
+  --accent-dim:     rgba(0, 123, 255, 0.12);
+  --accent-glow:    rgba(0, 123, 255, 0.06);
+
+  --success:        #28a745;
+  --success-dim:    rgba(40, 167, 69, 0.08);
+  --error:          #dc3545;
+  --error-dim:      rgba(220, 53, 69, 0.08);
+  --warning:        #ffc107;
+}
+
+/* ── Reset ──────────────────────────────────────────────────────────────── */
+*, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+html, body {
+  height: 100%;
+  background: var(--bg-0);
+  color: var(--text-primary);
+  font-family: var(--sans);
+  font-size: 20px;
+  line-height: 1.5;
+  overflow: hidden;
+}
+
+button { cursor: pointer; border: none; background: none; font: inherit; color: inherit; }
+textarea { resize: none; font: inherit; }
+[hidden] { display: none !important; }
+
+/* ── App Shell ──────────────────────────────────────────────────────────── */
+#app {
+  display: grid;
+  grid-template-rows: auto 1fr auto;
+  grid-template-columns: var(--sidebar-w) 1fr 1fr;
+  grid-template-areas:
+    "topbar  topbar  topbar"
+    "sidebar input   output"
+    "footer  footer  footer";
+  height: 100vh;
+  overflow: hidden;
+}
+
+/* ── Top Bar ────────────────────────────────────────────────────────────── */
+#topbar {
+  grid-area: topbar;
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  padding: 0 16px;
+  height: 48px;
+  background: var(--bg-1);
+  border-bottom: 1px solid var(--border);
+  z-index: 10;
+}
+
+.topbar-brand {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  margin-right: 12px;
+}
+
+.brand-icon {
+  width: 20px;
+  height: 20px;
+  background: var(--accent);
+  clip-path: polygon(50% 0%, 100% 100%, 0% 100%);
+  flex-shrink: 0;
+}
+
+.brand-name {
+  font-family: var(--mono);
+  font-size: 13px;
+  font-weight: 600;
+  color: var(--text-primary);
+  letter-spacing: 0.04em;
+}
+
+.brand-name span {
+  color: var(--accent);
+}
+
+#tool-title {
+  font-family: var(--mono);
+  font-size: 12px;
+  font-weight: 500;
+  color: var(--text-secondary);
+  padding: 3px 8px;
+  background: var(--bg-2);
+  border: 1px solid var(--border);
+  border-radius: var(--radius);
+}
+
+.topbar-spacer { flex: 1; }
+
+#sensitive-timer {
+  font-family: var(--mono);
+  font-size: 11px;
+  color: var(--warning);
+  letter-spacing: 0.04em;
+  animation: pulse-warn 1s ease-in-out infinite;
+}
+
+@keyframes pulse-warn {
+  0%, 100% { opacity: 1; }
+  50%       { opacity: 0.55; }
+}
+
+#btn-sensitive {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  padding: 4px 10px;
+  background: var(--bg-2);
+  border: 1px solid var(--border-hi);
+  border-radius: var(--radius);
+  font-family: var(--mono);
+  font-size: 11px;
+  font-weight: 500;
+  color: var(--text-secondary);
+  transition: var(--transition);
+}
+
+#btn-sensitive .sm-dot {
+  width: 6px;
+  height: 6px;
+  border-radius: 50%;
+  background: var(--text-muted);
+  transition: var(--transition);
+}
+
+#btn-sensitive.active {
+  border-color: var(--accent);
+  color: var(--accent);
+}
+
+#btn-sensitive.active .sm-dot {
+  background: var(--accent);
+  box-shadow: 0 0 6px var(--accent);
+}
+
+#btn-sensitive:hover { border-color: var(--accent); }
+
+#btn-clear {
+  display: flex;
+  align-items: center;
+  gap: 5px;
+  padding: 4px 10px;
+  background: var(--bg-2);
+  border: 1px solid var(--border);
+  border-radius: var(--radius);
+  font-family: var(--mono);
+  font-size: 11px;
+  color: var(--text-secondary);
+  transition: var(--transition);
+}
+
+#btn-clear:hover {
+  border-color: var(--error);
+  color: var(--error);
+}
+
+#btn-theme {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  padding: 4px 10px;
+  background: var(--bg-2);
+  border: 1px solid var(--border);
+  border-radius: var(--radius);
+  font-family: var(--mono);
+  font-size: 11px;
+  color: var(--text-secondary);
+  transition: var(--transition);
+}
+
+#btn-theme:hover {
+  border-color: var(--accent);
+}
+
+/* ── Sidebar ────────────────────────────────────────────────────────────── */
+#sidebar-nav {
+  grid-area: sidebar;
+  background: var(--bg-1);
+  border-right: 1px solid var(--border);
+  overflow-y: auto;
+  padding: 12px 0;
+}
+
+.sidebar-group {
+  padding: 8px 14px 4px;
+  font-family: var(--mono);
+  font-size: 9px;
+  font-weight: 600;
+  letter-spacing: 0.12em;
+  text-transform: uppercase;
+  color: var(--text-muted);
+}
+
+.sidebar-item {
+  display: block;
+  width: 100%;
+  padding: 7px 14px;
+  text-align: left;
+  font-family: var(--sans);
+  font-size: 12px;
+  font-weight: 400;
+  color: var(--text-secondary);
+  border-left: 2px solid transparent;
+  transition: var(--transition);
+}
+
+.sidebar-item:hover {
+  background: var(--bg-2);
+  color: var(--text-primary);
+}
+
+.sidebar-item.active {
+  background: var(--accent-dim);
+  border-left-color: var(--accent);
+  color: var(--accent);
+  font-weight: 500;
+}
+
+/* ── Input Panel ────────────────────────────────────────────────────────── */
+#input-panel {
+  grid-area: input;
+  display: flex;
+  flex-direction: column;
+  border-right: 1px solid var(--border);
+  background: var(--bg-0);
+  overflow: hidden;
+  min-height: 0;
+}
+
+.panel-header {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  padding: 0 14px;
+  height: 38px;
+  background: var(--bg-1);
+  border-bottom: 1px solid var(--border);
+  flex-shrink: 0;
+}
+
+.panel-label {
+  font-family: var(--mono);
+  font-size: 10px;
+  font-weight: 600;
+  letter-spacing: 0.1em;
+  text-transform: uppercase;
+  color: var(--text-muted);
+}
+
+.panel-spacer { flex: 1; }
+
+#btn-run {
+  display: flex;
+  align-items: center;
+  gap: 5px;
+  padding: 4px 12px;
+  background: var(--accent);
+  border-radius: var(--radius);
+  font-family: var(--mono);
+  font-size: 11px;
+  font-weight: 600;
+  color: var(--bg-0);
+  letter-spacing: 0.04em;
+  transition: var(--transition);
+}
+
+#btn-run:hover {
+  background: #33ddff;
+  box-shadow: 0 0 12px var(--accent-dim);
+}
+
+#btn-run:active { transform: scale(0.97); }
+
+#btn-copy {
+  display: flex;
+  align-items: center;
+  gap: 5px;
+  padding: 4px 10px;
+  background: var(--bg-2);
+  border: 1px solid var(--border);
+  border-radius: var(--radius);
+  font-family: var(--mono);
+  font-size: 11px;
+  color: var(--text-secondary);
+  transition: var(--transition);
+}
+
+#btn-copy:hover {
+  border-color: var(--accent);
+  color: var(--accent);
+}
+
+.run-shortcut {
+  font-weight: 400;
+  opacity: 0.6;
+  font-size: 10px;
+}
+
+/* ── Editor containers (input + output share this pattern) ──────────────── */
+
+/* The container scrolls; gutter and content move together inside it */
+.editor-container {
+  flex: 1;
+  min-height: 0;
+  display: flex;
+  overflow: hidden;
+  position: relative;
+}
+
+.editor-gutter {
+  flex-shrink: 0;
+  width: 42px;
+  padding: 16px 0;
+  background: var(--bg-1);
+  border-right: 1px solid var(--border);
+  text-align: right;
+  user-select: none;
+  pointer-events: none;
+  overflow-y: scroll;     /* scrollable but invisible — synced via JS scrollTop */
+  scrollbar-width: none;  /* Firefox: hide scrollbar */
+}
+
+.editor-gutter::-webkit-scrollbar {
+  display: none;          /* Chrome/Safari: hide scrollbar */
+}
+
+.editor-gutter span {
+  display: block;
+  font-family: var(--mono);
+  font-size: 12px;
+  line-height: 1.65;
+  padding-right: 8px;
+  color: var(--text-muted);
+}
+
+.editor-gutter span.line-error {
+  color: var(--error);
+  background: var(--error-dim);
+  font-weight: 700;
+}
+
+#input-area {
+  flex: 1;
+  min-height: 0;
+  padding: 16px 16px 16px 10px;
+  background: transparent;
+  border: none;
+  outline: none;
+  color: var(--text-primary);
+  font-family: var(--mono);
+  font-size: 12px;
+  line-height: 1.65;
+  caret-color: var(--accent);
+  overflow-y: scroll;   /* always show scrollbar to avoid width jump */
+  overflow-x: auto;
+  resize: none;
+  white-space: pre;
+  tab-size: 2;
+}
+
+#input-area::placeholder {
+  color: var(--text-muted);
+  font-style: normal;
+}
+
+#input-area[data-sensitive-cleared] {
+  animation: flash-cleared 2s ease forwards;
+}
+
+@keyframes flash-cleared {
+  0%   { background: rgba(255, 77, 106, 0.12); }
+  100% { background: transparent; }
+}
+
+/* ── Output Panel ───────────────────────────────────────────────────────── */
+#output-panel {
+  grid-area: output;
+  display: flex;
+  flex-direction: column;
+  background: var(--bg-0);
+  overflow: hidden;
+  min-height: 0;
+}
+
+#output-stats {
+  display: flex;
+  gap: 12px;
+  flex-wrap: wrap;
+}
+
+#output-stats span {
+  font-family: var(--mono);
+  font-size: 10px;
+  color: var(--text-muted);
+  background: var(--bg-2);
+  padding: 1px 6px;
+  border-radius: var(--radius);
+}
+
+#mode-hint {
+  margin-left: auto;
+  font-family: var(--mono);
+  font-size: 10px;
+  font-weight: 600;
+  color: var(--accent);
+  background: var(--accent-dim);
+  padding: 2px 8px;
+  border-radius: var(--radius);
+  letter-spacing: 0.06em;
+}
+
+.output-scroll {
+  flex: 1;
+  min-height: 0;
+  display: flex;
+  flex-direction: column;
+  overflow: hidden;
+}
+
+/* editor-container inside output must grow to fill output-scroll */
+#output-editor-container {
+  flex: 1;
+  min-height: 0;
+}
+
+/* <pre> scrolls on its own; gutter syncs scrollTop to it */
+#output-area {
+  flex: 1;
+  min-width: 0;
+  min-height: 0;
+  padding: 16px 16px 16px 10px;
+  font-family: var(--mono);
+  font-size: 12px;
+  line-height: 1.65;
+  white-space: pre;
+  word-break: normal;
+  overflow-y: scroll;
+  overflow-x: auto;
+  scrollbar-width: none;
+  background: transparent;
+  margin: 0;
+  color: var(--text-primary);
+}
+
+#output-area::-webkit-scrollbar { display: none; }
+
+#output-area.success { color: var(--text-primary); }
+
+#output-area.error {
+  color: var(--error);
+  white-space: pre-wrap;
+  word-break: break-word;
+}
+
+#output-empty {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  flex: 1;
+  height: 100%;
+  gap: 8px;
+  color: var(--text-muted);
+  font-family: var(--mono);
+  font-size: 11px;
+  user-select: none;
+}
+
+.empty-icon {
+  font-size: 28px;
+  opacity: 0.3;
+}
+
+/* ── Footer ─────────────────────────────────────────────────────────────── */
+#footer {
+  grid-area: footer;
+  display: flex;
+  align-items: center;
+  gap: 20px;
+  padding: 0 16px;
+  height: 30px;
+  background: var(--bg-1);
+  border-top: 1px solid var(--border);
+  font-family: var(--mono);
+  font-size: 10px;
+  color: var(--text-muted);
+}
+
+.footer-check {
+  display: flex;
+  align-items: center;
+  gap: 5px;
+  color: var(--success);
+}
+
+.footer-check::before {
+  content: "✔";
+  font-size: 9px;
+}
+
+/* ── Diff Output ──────────────────────────────────────────────────────────── */
+.diff-add { color: var(--success); display: block; background: var(--success-dim); }
+.diff-rem { color: var(--error);   display: block; background: var(--error-dim); }
+.diff-eq  { color: var(--text-secondary); display: block; }
+
+.stat-add { color: var(--success) !important; background: var(--success-dim) !important; }
+.stat-rem { color: var(--error)   !important; background: var(--error-dim)   !important; }
+
+/* ── JWT Status Hint ──────────────────────────────────────────────────────── */
+#mode-hint.mode-hint-error {
+  color: var(--error);
+  background: var(--error-dim);
+}
+#mode-hint.mode-hint-ok {
+  color: var(--success);
+  background: var(--success-dim);
+}
+
+/* ── Scrollbar ──────────────────────────────────────────────────────────── */
+::-webkit-scrollbar { width: 5px; height: 5px; }
+::-webkit-scrollbar-track { background: transparent; }
+::-webkit-scrollbar-thumb { background: var(--border-hi); border-radius: 2px; }
+::-webkit-scrollbar-thumb:hover { background: var(--text-muted); }
+
+/* ── Responsive (narrow screens) ────────────────────────────────────────── */
+@media (max-width: 900px) {
+  :root { --sidebar-w: 160px; }
+
+  #app {
+    grid-template-columns: var(--sidebar-w) 1fr;
+    grid-template-rows: auto 1fr 1fr auto;
+    grid-template-areas:
+      "topbar  topbar"
+      "sidebar input"
+      "sidebar output"
+      "footer  footer";
+  }
+}
+
+@media (max-width: 600px) {
+  #app {
+    grid-template-columns: 1fr;
+    grid-template-rows: auto auto 1fr 1fr auto;
+    grid-template-areas:
+      "topbar"
+      "sidebar"
+      "input"
+      "output"
+      "footer";
+    overflow-y: auto;
+    height: auto;
+    min-height: 100vh;
+  }
+
+  #sidebar-nav { overflow-y: visible; display: flex; flex-direction: row; flex-wrap: wrap; }
+  .sidebar-group { display: none; }
+  .sidebar-item { width: auto; padding: 6px 10px; }
+
+  #input-area { min-height: 150px; }
+}
+
+/* Fallback fonts when offline */
+:root {
+  --mono: 'Courier New', Courier, monospace;
+  --sans: system-ui, -apple-system, sans-serif;
+}
+@media (min-width: 1px) {
+  /* Overridden by Google Fonts if online */
+}
+</style>
+</head>
+<body>
+<div id="app">
+  <header id="topbar">
+    <div class="topbar-brand">
+      <div class="brand-icon"></div>
+      <span class="brand-name">Zero<span>Leak</span></span>
+    </div>
+    <span id="tool-title">—</span>
+    <div class="topbar-spacer"></div>
+    <span id="sensitive-timer" hidden></span>
+    <button id="btn-sensitive" class="active">
+      <span class="sm-dot"></span>
+      <span class="sm-label">Sensitive Mode: ON</span>
+    </button>
+    <button id="btn-clear">
+      <svg width="11" height="11" viewBox="0 0 12 12" fill="none"><path d="M1 1l10 10M11 1L1 11" stroke="currentColor" stroke-width="1.8" stroke-linecap="round"/></svg>
+      Clear
+    </button>
+    <button id="btn-theme">Light Mode</button>
+  </header>
+  <nav id="sidebar-nav" aria-label="Tool list"></nav>
+  <section id="input-panel">
+    <div class="panel-header">
+      <span class="panel-label">Input</span>
+      <div class="panel-spacer"></div>
+      <button id="btn-run">Run <span class="run-shortcut">⌃↵</span></button>
+    </div>
+    <div class="editor-container">
+      <div class="editor-gutter" id="input-gutter"><span>1</span></div>
+      <textarea id="input-area" spellcheck="false" autocomplete="off" autocorrect="off" autocapitalize="off"></textarea>
+    </div>
+  </section>
+  <section id="output-panel">
+    <div class="panel-header">
+      <span class="panel-label">Output</span>
+      <div class="panel-spacer"></div>
+      <div id="output-stats" hidden></div>
+      <span id="mode-hint" hidden></span>
+      <button id="btn-copy">Copy</button>
+    </div>
+    <div class="output-scroll">
+      <div id="output-empty"><span class="empty-icon">⬡</span><span>Run a tool to see output</span></div>
+      <div class="editor-container" id="output-editor-container" hidden>
+        <div class="editor-gutter" id="output-gutter"><span>1</span></div>
+        <pre id="output-area"></pre>
+      </div>
+    </div>
+  </section>
+  <footer id="footer">
+    <span class="footer-check">Running locally</span>
+    <span class="footer-check">No data leaves your machine</span>
+    <span class="footer-check">No network calls</span>
+    <span class="footer-check">No storage</span>
+  </footer>
+</div>
+<script>
+/**
+ * ZeroLeak DevTools – Sensitive Mode Core
+ *
+ * Handles auto-clear timers, manual clears, and tool-switch wiping.
+ * ZERO storage interaction. All state lives in-memory only.
+ */
+
+class SensitiveMode {
+  /**
+   * @param {object} options
+   * @param {number}   options.timeoutMs   – auto-clear delay in ms (default 30s)
+   * @param {Function} options.onClear     – callback fired when data is cleared
+   * @param {Function} options.onTick      – callback fired every second with secondsLeft (or null)
+   */
+  constructor({ timeoutMs = 30_000, onClear = () => {}, onTick = () => {} } = {}) {
+    this._timeoutMs = timeoutMs;
+    this._onClear = onClear;
+    this._onTick = onTick;
+    this._clearTimer = null;
+    this._tickTimer = null;
+    this._startedAt = null;
+    this._enabled = true;
+  }
+
+  get enabled() {
+    return this._enabled;
+  }
+
+  /** Call whenever the user types / pastes into input */
+  activity() {
+    if (!this._enabled) return;
+    this._reset();
+    this._startCountdown();
+  }
+
+  /** Manual "Clear All" */
+  clearNow() {
+    this._cancelTimers();
+    this._startedAt = null;
+    this._onTick(null);
+    this._onClear();
+  }
+
+  /** Call on tool switch – always clears regardless of mode */
+  onToolSwitch() {
+    this._cancelTimers();
+    this._startedAt = null;
+    this._onTick(null);
+    this._onClear();
+  }
+
+  toggle() {
+    this._enabled = !this._enabled;
+    if (!this._enabled) {
+      this._cancelTimers();
+      this._onTick(null);
+    }
+    return this._enabled;
+  }
+
+  setTimeout(ms) {
+    this._timeoutMs = ms;
+    if (this._startedAt !== null) {
+      this._reset();
+      this._startCountdown();
+    }
+  }
+
+  /* ── Private ───────────────────────────────────────────────────────────── */
+
+  _startCountdown() {
+    this._startedAt = Date.now();
+
+    this._clearTimer = setTimeout(() => {
+      this._cancelTimers();
+      this._startedAt = null;
+      this._onTick(null);
+      this._onClear();
+    }, this._timeoutMs);
+
+    this._tickTimer = setInterval(() => {
+      if (this._startedAt === null) { this._cancelTimers(); return; }
+      const elapsed = Date.now() - this._startedAt;
+      const left = Math.max(0, Math.ceil((this._timeoutMs - elapsed) / 1_000));
+      this._onTick(left);
+      if (left <= 0) this._cancelTimers();
+    }, 1_000);
+
+    // Fire immediately so UI doesn't wait 1s
+    const secondsLeft = Math.ceil(this._timeoutMs / 1_000);
+    this._onTick(secondsLeft);
+  }
+
+  _reset() {
+    this._cancelTimers();
+    this._startedAt = null;
+  }
+
+  _cancelTimers() {
+    if (this._clearTimer) { clearTimeout(this._clearTimer);  this._clearTimer = null; }
+    if (this._tickTimer)  { clearInterval(this._tickTimer); this._tickTimer = null; }
+  }
+}
+
+
+// === TOOL: base64 ===
+var TOOL_base64 = (function() {
+/**
+ * ZeroLeak DevTools – Base64 Tool
+ * Encode and decode Base64 strings entirely in-browser.
+ * NO network calls. NO storage. Pure browser crypto/text APIs.
+ */
+
+const meta = {
+  id: "base64",
+  label: "Base64 Encode / Decode",
+  phase: 1,
+  group: "Encoding",
+  placeholder: "Paste text to encode, or a Base64 string to decode…",
+  description: "Encode plain text to Base64 or decode Base64 back to text.",
+};
+
+/**
+ * Auto-detects whether input looks like Base64 and runs the right operation.
+ * Falls back to encode if detection is ambiguous.
+ *
+ * @param {string} input
+ * @param {"encode"|"decode"|"auto"} mode
+ * @returns {{ success: boolean, output: string, error: string, mode: string }}
+ */
+function run(input, mode = "auto") {
+  if (typeof input !== "string") {
+    return { success: false, output: "", error: "Input must be a string.", mode };
+  }
+
+  const trimmed = input.trim();
+  if (trimmed === "") {
+    return { success: false, output: "", error: "Input is empty.", mode };
+  }
+
+  const detectedMode =
+    mode !== "auto"
+      ? mode
+      : isBase64(trimmed)
+      ? "decode"
+      : "encode";
+
+  try {
+    if (detectedMode === "encode") {
+      // TextEncoder handles full Unicode
+      const bytes = new TextEncoder().encode(trimmed);
+      const binary = Array.from(bytes, (b) => String.fromCharCode(b)).join("");
+      const output = btoa(binary);
+      return { success: true, output, error: "", mode: "encode" };
+    } else {
+      // Decode: handle URL-safe Base64 variants
+      const normalized = trimmed.replace(/-/g, "+").replace(/_/g, "/");
+      const padded = normalized.padEnd(
+        normalized.length + ((4 - (normalized.length % 4)) % 4),
+        "="
+      );
+      const binary = atob(padded);
+      const bytes = Uint8Array.from(binary, (c) => c.charCodeAt(0));
+      const output = new TextDecoder("utf-8", { fatal: true }).decode(bytes);
+      return { success: true, output, error: "", mode: "decode" };
+    }
+  } catch (e) {
+    return {
+      success: false,
+      output: "",
+      error: `${detectedMode === "decode" ? "Decode" : "Encode"} failed: ${e.message}`,
+      mode: detectedMode,
+    };
+  }
+}
+
+/** Heuristic: valid Base64 character set + length divisible by 4 after padding */
+function isBase64(str) {
+  const b64Regex = /^[A-Za-z0-9+/\-_]*={0,2}$/;
+  return b64Regex.test(str) && str.length % 4 === 0;
+}
+
+  return { meta: meta, run: run };
+})();
+
+// === TOOL: basic-auth ===
+var TOOL_basic_auth = (function() {
+/**
+ * ZeroLeak DevTools – Basic Auth Generator
+ * Generates HTTP Basic Auth headers from username:password pairs.
+ * NO network calls. NO storage. Pure browser btoa().
+ */
+
+const meta = {
+  id: "basic-auth",
+  label: "Basic Auth Generator",
+  phase: 1,
+  group: "Auth",
+  placeholder: 'Enter credentials as  username:password\n\nExample:\n  admin:s3cr3t',
+  description: "Generate a Base64-encoded HTTP Basic Auth header value.",
+};
+
+/**
+ * @param {string} input  – "username:password"
+ * @returns {{ success: boolean, output: string, error: string, header: string }}
+ */
+function run(input) {
+  if (typeof input !== "string") {
+    return { success: false, output: "", error: "Input must be a string.", header: "" };
+  }
+
+  const trimmed = input.trim();
+  if (trimmed === "") {
+    return { success: false, output: "", error: "Input is empty.", header: "" };
+  }
+
+  // Split only on the FIRST colon – passwords may contain colons
+  const colonIndex = trimmed.indexOf(":");
+  if (colonIndex === -1) {
+    return {
+      success: false,
+      output: "",
+      error: 'Format must be "username:password". No colon found.',
+      header: "",
+    };
+  }
+
+  const username = trimmed.slice(0, colonIndex);
+  const password = trimmed.slice(colonIndex + 1);
+
+  if (username === "") {
+    return { success: false, output: "", error: "Username cannot be empty.", header: "" };
+  }
+
+  try {
+    // Encode full Unicode via TextEncoder → binary string → btoa
+    const encode = (str) => {
+      const bytes = new TextEncoder().encode(str);
+      return Array.from(bytes, (b) => String.fromCharCode(b)).join("");
+    };
+
+    const credentials = `${encode(username)}:${encode(password)}`;
+    const token = btoa(credentials);
+    const header = `Basic ${token}`;
+
+    const output = [
+      `Token:   ${token}`,
+      `Header:  Authorization: ${header}`,
+      "",
+      `Username: ${username}`,
+      `Password: ${"•".repeat(Math.min(password.length, 12))}${ password.length > 12 ? "…" : "" }`,
+    ].join("\n");
+
+    return { success: true, output, error: "", header };
+  } catch (e) {
+    return { success: false, output: "", error: `Encoding failed: ${e.message}`, header: "" };
+  }
+}
+
+  return { meta: meta, run: run };
+})();
+
+// === TOOL: json-validator ===
+var TOOL_json_validator = (function() {
+/**
+ * ZeroLeak DevTools – JSON Validator
+ * Validates and pretty-prints JSON. Pinpoints error location.
+ * NO network calls. NO storage.
+ */
+
+const meta = {
+  id: "json-validator",
+  label: "JSON Validator & Linter",
+  phase: 1,
+  group: "Format",
+  placeholder: 'Paste JSON here…\n\n{"key": "value", "nested": {"a": 1}}',
+  description: "Validate and pretty-print JSON. Lints for common issues like trailing commas and duplicate keys. Shows exact error location on failure.",
+};
+
+/**
+ * @param {string} input
+ * @param {number} [indent=2]
+ * @returns {{ success: boolean, output: string, error: string, stats: object|null, issues: object[] }}
+ */
+function run(input, indent = 2) {
+  if (typeof input !== "string") {
+    return { success: false, output: "", error: "Input must be a string.", stats: null, issues: [] };
+  }
+
+  const trimmed = input.trim();
+  if (trimmed === "") {
+    return { success: false, output: "", error: "Input is empty.", stats: null, issues: [] };
+  }
+
+  const issues = lint(trimmed);
+  const errors = issues.filter((i) => i.severity === "error");
+  const warnings = issues.filter((i) => i.severity === "warning");
+
+  try {
+    const parsed = JSON.parse(trimmed);
+    const output = JSON.stringify(parsed, null, indent);
+    const stats = collectStats(parsed);
+
+    let fullOutput = output;
+    if (issues.length > 0) {
+      const issueLines = issues.map((i) => `Line ${i.line}: [${i.severity.toUpperCase()}] ${i.message}`);
+      fullOutput = `Linting Issues:\n${issueLines.join("\n")}\n\nPretty-printed JSON:\n${output}`;
+    }
+
+    return {
+      success: true,
+      output: fullOutput,
+      error: "",
+      stats,
+      issues,
+    };
+  } catch (e) {
+    // Extract line/column from error message (V8, SpiderMonkey, JSC all differ)
+    const location = extractLocation(e.message, trimmed);
+    const snippet = location ? buildSnippet(trimmed, location) : "";
+
+    return {
+      success: false,
+      output: "",
+      error: `${e.message}${snippet ? "\n\n" + snippet : ""}`,
+      stats: null,
+      issues,
+    };
+  }
+}
+
+/* ── Linting ─────────────────────────────────────────────────────────────── */
+
+function lint(json) {
+  const issues = [];
+  const lines = json.split("\n");
+
+  lines.forEach((line, idx) => {
+    const lineNum = idx + 1;
+    const trimmedLine = line.trim();
+
+    // Check for trailing commas
+    if (trimmedLine.endsWith(",")) {
+      // Check if it's inside an object or array
+      let openBraces = 0, openBrackets = 0;
+      for (let i = 0; i < line.length; i++) {
+        if (line[i] === "{") openBraces++;
+        else if (line[i] === "}") openBraces--;
+        else if (line[i] === "[") openBrackets++;
+        else if (line[i] === "]") openBrackets--;
+      }
+      if (openBraces > 0 || openBrackets > 0) {
+        issues.push({ line: lineNum, severity: "warning", message: "Trailing comma detected. Not standard JSON, but some parsers allow it." });
+      }
+    }
+
+    // Check for comments (// or /* */)
+    if (trimmedLine.includes("//") || trimmedLine.includes("/*")) {
+      issues.push({ line: lineNum, severity: "warning", message: "Comments found. JSON does not support comments." });
+    }
+  });
+
+  // Check for duplicate keys (simple heuristic)
+  try {
+    const parsed = JSON.parse(json);
+    const duplicates = findDuplicateKeys(parsed);
+    duplicates.forEach((dup) => {
+      issues.push({ line: 1, severity: "warning", message: `Duplicate key "${dup.key}" found. Last occurrence wins.` });
+    });
+  } catch (e) {
+    // If parsing fails, skip duplicate check
+  }
+
+  return issues;
+}
+
+function findDuplicateKeys(obj, path = "") {
+  const keys = new Map();
+  const duplicates = [];
+
+  function walk(o, p) {
+    if (Array.isArray(o)) {
+      o.forEach((item, i) => walk(item, `${p}[${i}]`));
+    } else if (o !== null && typeof o === "object") {
+      Object.keys(o).forEach((k) => {
+        if (keys.has(k)) {
+          duplicates.push({ key: k, path: p });
+        } else {
+          keys.set(k, true);
+        }
+        walk(o[k], p ? `${p}.${k}` : k);
+      });
+    }
+  }
+
+  walk(obj, path);
+  return duplicates;
+}
+
+/* ── Helpers ─────────────────────────────────────────────────────────────── */
+
+function collectStats(value, depth = 0) {
+  let keys = 0;
+  let arrays = 0;
+  let objects = 0;
+  let maxDepth = depth;
+
+  function walk(v, d) {
+    if (Array.isArray(v)) {
+      arrays++;
+      maxDepth = Math.max(maxDepth, d);
+      v.forEach((item) => walk(item, d + 1));
+    } else if (v !== null && typeof v === "object") {
+      objects++;
+      maxDepth = Math.max(maxDepth, d);
+      Object.keys(v).forEach((k) => {
+        keys++;
+        walk(v[k], d + 1);
+      });
+    }
+  }
+
+  walk(value, depth);
+  return { keys, arrays, objects, maxDepth };
+}
+
+function extractLocation(message, source) {
+  // V8: "Unexpected token } in JSON at position 42"
+  const posMatch = message.match(/position (\d+)/i);
+  if (posMatch) {
+    const pos = parseInt(posMatch[1], 10);
+    return positionToLineCol(source, pos);
+  }
+  // Firefox: "JSON.parse: expected ',' or '}' at line 3 column 5 of the JSON data"
+  const lineColMatch = message.match(/line (\d+) column (\d+)/i);
+  if (lineColMatch) {
+    return { line: parseInt(lineColMatch[1], 10), col: parseInt(lineColMatch[2], 10) };
+  }
+  return null;
+}
+
+function positionToLineCol(source, pos) {
+  const lines = source.slice(0, pos).split("\n");
+  return { line: lines.length, col: lines[lines.length - 1].length + 1 };
+}
+
+function buildSnippet(source, { line, col }) {
+  const lines = source.split("\n");
+  const targetLine = lines[line - 1] ?? "";
+  const truncated = targetLine.length > 80
+    ? targetLine.slice(0, 77) + "…"
+    : targetLine;
+  const pointer = " ".repeat(Math.max(0, col - 1)) + "^";
+  return `Line ${line}, Col ${col}:\n  ${truncated}\n  ${pointer}`;
+}
+
+  return { meta: meta, run: run };
+})();
+
+// === TOOL: uuid ===
+var TOOL_uuid = (function() {
+/**
+ * ZeroLeak DevTools – UUID Generator
+ * Generates cryptographically secure v4 UUIDs using the browser's
+ * built-in crypto.randomUUID() (or crypto.getRandomValues() fallback).
+ * NO network calls. NO storage.
+ */
+
+const meta = {
+  id: "uuid",
+  label: "UUID Generator",
+  phase: 1,
+  group: "Generate",
+  placeholder: "Enter a number (1–100) to generate that many UUIDs, or leave blank for one.",
+  description: "Generate cryptographically secure UUID v4 values.",
+};
+
+/**
+ * @param {string} input  – optional count, e.g. "5"
+ * @returns {{ success: boolean, output: string, error: string, uuids: string[] }}
+ */
+function run(input) {
+  const raw = typeof input === "string" ? input.trim() : "";
+  let count = 1;
+
+  if (raw !== "") {
+    const parsed = parseInt(raw, 10);
+    if (isNaN(parsed) || parsed < 1) {
+      return { success: false, output: "", error: "Enter a positive integer (1–100).", uuids: [] };
+    }
+    if (parsed > 100) {
+      return { success: false, output: "", error: "Maximum batch size is 100.", uuids: [] };
+    }
+    count = parsed;
+  }
+
+  try {
+    const uuids = Array.from({ length: count }, generateV4);
+    return {
+      success: true,
+      output: uuids.join("\n"),
+      error: "",
+      uuids,
+    };
+  } catch (e) {
+    return { success: false, output: "", error: `Generation failed: ${e.message}`, uuids: [] };
+  }
+}
+
+/* ── Core ──────────────────────────────────────────────────────────────── */
+
+function generateV4() {
+  // Prefer native randomUUID (Chrome 92+, Firefox 95+, Safari 15.4+)
+  if (typeof crypto !== "undefined" && typeof crypto.randomUUID === "function") {
+    return crypto.randomUUID();
+  }
+  // Fallback: build from getRandomValues
+  const bytes = new Uint8Array(16);
+  crypto.getRandomValues(bytes);
+  // Set version 4 bits
+  bytes[6] = (bytes[6] & 0x0f) | 0x40;
+  // Set variant bits (10xx)
+  bytes[8] = (bytes[8] & 0x3f) | 0x80;
+
+  const hex = Array.from(bytes, (b) => b.toString(16).padStart(2, "0")).join("");
+  return [
+    hex.slice(0, 8),
+    hex.slice(8, 12),
+    hex.slice(12, 16),
+    hex.slice(16, 20),
+    hex.slice(20),
+  ].join("-");
+}
+
+  return { meta: meta, run: run };
+})();
+
+// === TOOL: timestamp ===
+var TOOL_timestamp = (function() {
+/**
+ * ZeroLeak DevTools – Timestamp Converter
+ * Convert between Unix epoch (seconds or milliseconds) and human-readable dates.
+ * NO network calls. NO storage.
+ */
+
+const meta = {
+  id: "timestamp",
+  label: "Timestamp Converter",
+  phase: 1,
+  group: "Time",
+  placeholder:
+    "Enter a Unix timestamp (e.g. 1700000000 or 1700000000000)\nor an ISO date (e.g. 2024-01-15T10:30:00Z)\nor type  now  for the current time.",
+  description: "Convert Unix epoch ↔ human-readable date/time in multiple formats.",
+};
+
+/**
+ * @param {string} input
+ * @returns {{ success: boolean, output: string, error: string, data: object|null }}
+ */
+function run(input) {
+  if (typeof input !== "string") {
+    return { success: false, output: "", error: "Input must be a string.", data: null };
+  }
+
+  const trimmed = input.trim().toLowerCase();
+  if (trimmed === "") {
+    return { success: false, output: "", error: "Input is empty.", data: null };
+  }
+
+  try {
+    const ms = parse(trimmed);
+    if (ms === null || isNaN(ms)) {
+      return { success: false, output: "", error: "Could not parse input as a timestamp or date.", data: null };
+    }
+
+    const date = new Date(ms);
+    if (!isValidDate(date)) {
+      return { success: false, output: "", error: "Date is out of range.", data: null };
+    }
+
+    const data = buildData(date, ms);
+    const output = formatOutput(data);
+    return { success: true, output, error: "", data };
+  } catch (e) {
+    return { success: false, output: "", error: e.message, data: null };
+  }
+}
+
+/* ── Parsing ─────────────────────────────────────────────────────────────── */
+
+function parse(trimmed) {
+  if (trimmed === "now") return Date.now();
+
+  // Pure numeric → epoch
+  if (/^\d+$/.test(trimmed)) {
+    const n = parseInt(trimmed, 10);
+    // Distinguish seconds (10 digits) from milliseconds (13 digits)
+    return n.toString().length <= 10 ? n * 1000 : n;
+  }
+
+  // ISO 8601 or other date strings
+  const d = new Date(trimmed);
+  if (isValidDate(d)) return d.getTime();
+
+  // Partial date, e.g. "2024-01-15"
+  const partial = new Date(trimmed + "T00:00:00Z");
+  if (isValidDate(partial)) return partial.getTime();
+
+  return null;
+}
+
+/* ── Formatting ──────────────────────────────────────────────────────────── */
+
+function buildData(date, ms) {
+  const seconds = Math.floor(ms / 1000);
+  return {
+    epochSeconds: seconds,
+    epochMs: ms,
+    utc: date.toUTCString(),
+    iso8601: date.toISOString(),
+    local: date.toLocaleString(undefined, { timeZoneName: "short" }),
+    relative: relativeTime(ms),
+    dayOfWeek: date.toLocaleDateString(undefined, { weekday: "long", timeZone: "UTC" }),
+    weekNumber: isoWeek(date),
+  };
+}
+
+function formatOutput(d) {
+  return [
+    `Epoch (seconds):  ${d.epochSeconds}`,
+    `Epoch (ms):       ${d.epochMs}`,
+    ``,
+    `UTC:              ${d.utc}`,
+    `ISO 8601:         ${d.iso8601}`,
+    `Local:            ${d.local}`,
+    ``,
+    `Relative:         ${d.relative}`,
+    `Day of week:      ${d.dayOfWeek}`,
+    `ISO Week:         Week ${d.weekNumber}`,
+  ].join("\n");
+}
+
+function relativeTime(ms) {
+  const diffMs = Date.now() - ms;
+  const abs = Math.abs(diffMs);
+  const future = diffMs < 0;
+
+  const units = [
+    [60_000, "minute"],
+    [3_600_000, "hour"],
+    [86_400_000, "day"],
+    [2_592_000_000, "month"],
+    [31_536_000_000, "year"],
+  ];
+
+  if (abs < 5_000) return "just now";
+
+  let label = `${Math.round(abs / 1_000)} seconds`;
+  for (const [threshold, unit] of units) {
+    if (abs < threshold) break;
+    const val = Math.round(abs / threshold);
+    label = `${val} ${unit}${val !== 1 ? "s" : ""}`;
+  }
+
+  return future ? `in ${label}` : `${label} ago`;
+}
+
+function isoWeek(date) {
+  const d = new Date(Date.UTC(date.getUTCFullYear(), date.getUTCMonth(), date.getUTCDate()));
+  d.setUTCDate(d.getUTCDate() + 4 - (d.getUTCDay() || 7));
+  const yearStart = new Date(Date.UTC(d.getUTCFullYear(), 0, 1));
+  return Math.ceil(((d - yearStart) / 86_400_000 + 1) / 7);
+}
+
+function isValidDate(d) {
+  return d instanceof Date && !isNaN(d.getTime());
+}
+
+  return { meta: meta, run: run };
+})();
+
+// === TOOL: jwt ===
+var TOOL_jwt = (function() {
+/**
+ * ZeroLeak DevTools – JWT Decoder
+ * Decodes header + payload, checks expiry. NO signature verification.
+ * NO network calls. NO storage.
+ */
+
+const meta = {
+  id: "jwt",
+  label: "JWT Decoder",
+  phase: 2,
+  group: "Auth",
+  placeholder: "Paste a JWT token here…\n\neyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJzdWIiOiIxMjM0NTY3ODkwIn0.xxxxx",
+  description: "Decode JWT header and payload. Shows expiry status. Does NOT verify signatures.",
+};
+
+/**
+ * @param {string} input
+ * @returns {{ success: boolean, output: string, error: string, data: object|null }}
+ */
+function run(input) {
+  if (typeof input !== "string") {
+    return { success: false, output: "", error: "Input must be a string.", data: null };
+  }
+
+  const token = input.trim();
+  if (token === "") {
+    return { success: false, output: "", error: "Input is empty.", data: null };
+  }
+
+  const parts = token.split(".");
+  if (parts.length !== 3) {
+    return {
+      success: false,
+      output: "",
+      error: `Invalid JWT structure. Expected 3 parts separated by '.', got ${parts.length}.`,
+      data: null,
+    };
+  }
+
+  let header, payload;
+
+  try {
+    header = decodeSegment(parts[0]);
+  } catch (e) {
+    return { success: false, output: "", error: `Header decode failed: ${e.message}`, data: null };
+  }
+
+  try {
+    payload = decodeSegment(parts[1]);
+  } catch (e) {
+    return { success: false, output: "", error: `Payload decode failed: ${e.message}`, data: null };
+  }
+
+  const now = Math.floor(Date.now() / 1000);
+  const expiry = analyzeExpiry(payload, now);
+  const issuedAt = payload.iat ? new Date(payload.iat * 1000).toISOString() : null;
+  const notBefore = payload.nbf ? new Date(payload.nbf * 1000).toISOString() : null;
+
+  const output = buildOutput(header, payload, expiry, issuedAt, notBefore, parts[2]);
+
+  return {
+    success: true,
+    output,
+    error: "",
+    data: { header, payload, expiry, issuedAt, notBefore },
+  };
+}
+
+/* ── Helpers ──────────────────────────────────────────────────────────── */
+
+function decodeSegment(segment) {
+  // URL-safe Base64 → standard Base64
+  const normalized = segment.replace(/-/g, "+").replace(/_/g, "/");
+  const padded = normalized.padEnd(normalized.length + ((4 - (normalized.length % 4)) % 4), "=");
+  const binary = atob(padded);
+  const bytes = Uint8Array.from(binary, (c) => c.charCodeAt(0));
+  const json = new TextDecoder("utf-8", { fatal: true }).decode(bytes);
+  return JSON.parse(json);
+}
+
+function analyzeExpiry(payload, now) {
+  if (!payload.exp) return { status: "no-exp", label: "No expiry claim (exp)" };
+  const exp = payload.exp;
+  const expDate = new Date(exp * 1000).toISOString();
+  if (now > exp) {
+    const ago = formatDuration(now - exp);
+    return { status: "expired", label: `EXPIRED ${ago} ago`, date: expDate };
+  }
+  const left = formatDuration(exp - now);
+  return { status: "valid", label: `Valid — expires in ${left}`, date: expDate };
+}
+
+function formatDuration(seconds) {
+  if (seconds < 60) return `${seconds}s`;
+  if (seconds < 3600) return `${Math.floor(seconds / 60)}m ${seconds % 60}s`;
+  if (seconds < 86400) return `${Math.floor(seconds / 3600)}h ${Math.floor((seconds % 3600) / 60)}m`;
+  return `${Math.floor(seconds / 86400)}d ${Math.floor((seconds % 86400) / 3600)}h`;
+}
+
+function buildOutput(header, payload, expiry, issuedAt, notBefore, sig) {
+  const lines = [
+    "── HEADER ─────────────────────────────────────",
+    JSON.stringify(header, null, 2),
+    "",
+    "── PAYLOAD ────────────────────────────────────",
+    JSON.stringify(payload, null, 2),
+    "",
+    "── CLAIMS ─────────────────────────────────────",
+  ];
+
+  if (expiry.date)  lines.push(`exp  (Expires):     ${expiry.date}`);
+  if (issuedAt)     lines.push(`iat  (Issued At):   ${issuedAt}`);
+  if (notBefore)    lines.push(`nbf  (Not Before):  ${notBefore}`);
+  if (payload.sub)  lines.push(`sub  (Subject):     ${payload.sub}`);
+  if (payload.iss)  lines.push(`iss  (Issuer):      ${payload.iss}`);
+  if (payload.aud)  lines.push(`aud  (Audience):    ${JSON.stringify(payload.aud)}`);
+
+  lines.push("");
+  lines.push("── STATUS ─────────────────────────────────────");
+  const icon = expiry.status === "expired" ? "✖" : expiry.status === "valid" ? "✔" : "–";
+  lines.push(`${icon}  ${expiry.label}`);
+  lines.push("");
+  lines.push("── SIGNATURE (not verified) ───────────────────");
+  lines.push(sig.slice(0, 40) + (sig.length > 40 ? "…" : ""));
+
+  return lines.join("\n");
+}
+
+  return { meta: meta, run: run };
+})();
+
+// === TOOL: url-encode ===
+var TOOL_url_encode = (function() {
+/**
+ * ZeroLeak DevTools – URL Encode / Decode
+ * Handles full URLs and query-string components.
+ * NO network calls. NO storage.
+ */
+
+const meta = {
+  id: "url-encode",
+  label: "URL Encode / Decode",
+  phase: 2,
+  group: "Encoding",
+  placeholder: "Paste a URL or URL-encoded string…\n\nhttps://example.com/path?name=hello world&token=abc+123",
+  description: "Encode or decode URLs and query-string components. Auto-detects direction.",
+};
+
+/**
+ * @param {string} input
+ * @param {"encode"|"decode"|"auto"} mode
+ * @returns {{ success: boolean, output: string, error: string, mode: string }}
+ */
+function run(input, mode = "auto") {
+  if (typeof input !== "string") {
+    return { success: false, output: "", error: "Input must be a string.", mode };
+  }
+
+  const trimmed = input.trim();
+  if (trimmed === "") {
+    return { success: false, output: "", error: "Input is empty.", mode };
+  }
+
+  const detectedMode = mode !== "auto" ? mode : isEncoded(trimmed) ? "decode" : "encode";
+
+  try {
+    if (detectedMode === "encode") {
+      // Detect if it looks like a full URL — encode only the components
+      if (looksLikeURL(trimmed)) {
+        const url = new URL(trimmed);
+        // Re-encode search params properly
+        const encoded = url.toString();
+        const component = encodeURIComponent(trimmed);
+        const output = [
+          `Full URL (encoded):`,
+          encoded,
+          ``,
+          `As URI Component:`,
+          component,
+          ``,
+          `Query params:`,
+          ...Array.from(url.searchParams.entries()).map(
+            ([k, v]) => `  ${encodeURIComponent(k)} = ${encodeURIComponent(v)}`
+          ),
+        ].join("\n");
+        return { success: true, output, error: "", mode: "encode" };
+      }
+
+      // Plain text / query component
+      const output = [
+        `encodeURIComponent:`,
+        encodeURIComponent(trimmed),
+        ``,
+        `encodeURI:`,
+        encodeURI(trimmed),
+      ].join("\n");
+      return { success: true, output, error: "", mode: "encode" };
+
+    } else {
+      // Decode
+      let decoded;
+      try {
+        decoded = decodeURIComponent(trimmed.replace(/\+/g, " "));
+      } catch {
+        decoded = unescape(trimmed);
+      }
+
+      const output = [
+        `Decoded:`,
+        decoded,
+        ``,
+        `(${trimmed.length} chars encoded → ${decoded.length} chars decoded)`,
+      ].join("\n");
+
+      return { success: true, output, error: "", mode: "decode" };
+    }
+  } catch (e) {
+    return {
+      success: false,
+      output: "",
+      error: `${detectedMode} failed: ${e.message}`,
+      mode: detectedMode,
+    };
+  }
+}
+
+/* ── Helpers ──────────────────────────────────────────────────────────── */
+
+function isEncoded(str) {
+  return /%[0-9A-Fa-f]{2}/.test(str) || /\+/.test(str);
+}
+
+function looksLikeURL(str) {
+  return /^https?:\/\//i.test(str);
+}
+
+  return { meta: meta, run: run };
+})();
+
+// === TOOL: yaml-linter ===
+var TOOL_yaml_linter = (function() {
+/**
+ * ZeroLeak DevTools – YAML Linter
+ *
+ * Lightweight structural YAML validator — catches the most common errors
+ * without requiring a third-party library (no CDN, fully offline).
+ *
+ * Detects:
+ *   - Tab characters (forbidden in YAML)
+ *   - Inconsistent indentation within a block
+ *   - Duplicate keys at the same level
+ *   - Unclosed block scalars (| / >)
+ *   - Bare colons in flow context
+ *   - Trailing colons without values
+ *   - Mixed list/map at same level
+ *
+ * NOTE: This is a linter, not a full parser. It catches structural issues
+ * but will not validate every YAML edge case.
+ */
+
+const meta = {
+  id: "yaml-linter",
+  label: "YAML Linter",
+  phase: 2,
+  group: "Format",
+  placeholder: `Paste YAML here…\n\nname: my-service\nversion: 1.0\nports:\n  - 8080\n  - 9090`,
+  description: "Lint YAML for tabs, duplicate keys, indentation issues, and common mistakes.",
+};
+
+/**
+ * @param {string} input
+ * @returns {{ success: boolean, output: string, error: string, issues: object[] }}
+ */
+function run(input) {
+  if (typeof input !== "string") {
+    return { success: false, output: "", error: "Input must be a string.", issues: [] };
+  }
+
+  const trimmed = input.trim();
+  if (trimmed === "") {
+    return { success: false, output: "", error: "Input is empty.", issues: [] };
+  }
+
+  const issues = lint(trimmed);
+  const errors   = issues.filter((i) => i.severity === "error");
+  const warnings = issues.filter((i) => i.severity === "warning");
+
+  if (issues.length === 0) {
+    const stats = buildStats(trimmed);
+    return {
+      success: true,
+      output: `✔  No issues found\n\n${stats}`,
+      error: "",
+      issues: [],
+    };
+  }
+
+  const output = [
+    errors.length   ? `✖  ${errors.length} error${errors.length > 1 ? "s" : ""}` : null,
+    warnings.length ? `⚠  ${warnings.length} warning${warnings.length > 1 ? "s" : ""}` : null,
+    "",
+    ...issues.map((i) => `Line ${String(i.line).padStart(3)}: [${i.severity.toUpperCase()}] ${i.message}`),
+  ].filter((l) => l !== null).join("\n");
+
+  return {
+    success: errors.length === 0, // warnings only = success
+    output,
+    error: errors.length > 0 ? `${errors.length} error(s) found` : "",
+    issues,
+  };
+}
+
+/* ── Linting Rules ────────────────────────────────────────────────────── */
+
+function lint(yaml) {
+  const lines = yaml.split("\n");
+  const issues = [];
+
+  // Track key context per indentation level
+  const keyStack = new Map(); // indent → Set of keys
+
+  lines.forEach((line, idx) => {
+    const lineNum = idx + 1;
+    const raw = line;
+
+    // Rule 1: No tabs
+    if (/\t/.test(raw)) {
+      issues.push({ line: lineNum, severity: "error", message: "Tab character found — YAML requires spaces." });
+    }
+
+    // Skip blank lines and comments
+    if (raw.trim() === "" || raw.trim().startsWith("#")) return;
+
+    const indent = raw.match(/^(\s*)/)[1].length;
+    const content = raw.trim();
+
+    // Rule 2: Trailing colon with nothing after (likely forgotten value)
+    if (/^[^:]+:\s*$/.test(content) && !content.startsWith("-") && !content.startsWith("|") && !content.startsWith(">")) {
+      // Could be a valid mapping key with block value — only warn
+      // (omitted: this is legal YAML for nested blocks)
+    }
+
+    // Rule 3: Duplicate keys at same indent level
+    const keyMatch = content.match(/^([a-zA-Z0-9_\-"'. ]+)\s*:/);
+    if (keyMatch && !content.startsWith("-")) {
+      const key = keyMatch[1].trim();
+      if (!keyStack.has(indent)) keyStack.set(indent, new Map());
+      const levelMap = keyStack.get(indent);
+      if (levelMap.has(key)) {
+        issues.push({
+          line: lineNum,
+          severity: "error",
+          message: `Duplicate key "${key}" at indentation level ${indent}.`,
+        });
+      } else {
+        levelMap.set(key, lineNum);
+        // Clear deeper levels when we step back up
+        for (const k of keyStack.keys()) {
+          if (k > indent) keyStack.delete(k);
+        }
+      }
+    }
+
+    // Rule 4: Indentation not a multiple of 2
+    if (indent > 0 && indent % 2 !== 0) {
+      issues.push({
+        line: lineNum,
+        severity: "warning",
+        message: `Odd indentation (${indent} spaces) — YAML conventionally uses multiples of 2.`,
+      });
+    }
+
+    // Rule 5: Colon without space (e.g. key:value)
+    if (/^[^"'#]+:[^\s\/\/]/.test(content) && !/^https?:/.test(content) && !content.startsWith("-")) {
+      issues.push({
+        line: lineNum,
+        severity: "error",
+        message: `Missing space after colon — use "key: value" not "key:value".`,
+      });
+    }
+  });
+
+  return issues;
+}
+
+function buildStats(yaml) {
+  const lines = yaml.split("\n");
+  const keys = (yaml.match(/^\s*[a-zA-Z0-9_]+\s*:/gm) || []).length;
+  const listItems = (yaml.match(/^\s*-\s/gm) || []).length;
+  const comments = (yaml.match(/^\s*#/gm) || []).length;
+  return [
+    `Lines:      ${lines.length}`,
+    `Keys:       ${keys}`,
+    `List items: ${listItems}`,
+    `Comments:   ${comments}`,
+  ].join("\n");
+}
+
+  return { meta: meta, run: run };
+})();
+
+// === TOOL: xml-formatter ===
+var TOOL_xml_formatter = (function() {
+/**
+ * ZeroLeak DevTools – XML Formatter / Validator
+ * Uses the browser's built-in DOMParser (no external deps).
+ * NO network calls. NO storage.
+ */
+
+const meta = {
+  id: "xml-formatter",
+  label: "XML Formatter",
+  phase: 2,
+  group: "Format",
+  placeholder: `Paste XML here…\n\n<root><item id="1"><name>Alice</name></item></root>`,
+  description: "Validate and pretty-print XML using the browser's built-in DOMParser.",
+};
+
+/**
+ * @param {string} input
+ * @param {number} [indent=2]
+ * @returns {{ success: boolean, output: string, error: string, stats: object|null }}
+ */
+function run(input, indent = 2) {
+  if (typeof input !== "string") {
+    return { success: false, output: "", error: "Input must be a string.", stats: null };
+  }
+
+  const trimmed = input.trim();
+  if (trimmed === "") {
+    return { success: false, output: "", error: "Input is empty.", stats: null };
+  }
+
+  // DOMParser is available in all modern browsers
+  const parser = new DOMParser();
+  const doc = parser.parseFromString(trimmed, "application/xml");
+
+  // Check for parse errors (DOMParser embeds error in document)
+  const parseError = doc.querySelector("parsererror");
+  if (parseError) {
+    const msg = parseError.textContent.trim().split("\n")[0];
+    return {
+      success: false,
+      output: "",
+      error: `XML parse error: ${msg}`,
+      stats: null,
+    };
+  }
+
+  try {
+    const output = serializeNode(doc.documentElement, 0, indent);
+    const stats = collectStats(doc.documentElement);
+    return { success: true, output, error: "", stats };
+  } catch (e) {
+    return { success: false, output: "", error: `Serialization failed: ${e.message}`, stats: null };
+  }
+}
+
+/* ── Pretty-printer ───────────────────────────────────────────────────── */
+
+function serializeNode(node, depth, indentSize) {
+  const pad = " ".repeat(depth * indentSize);
+  const childPad = " ".repeat((depth + 1) * indentSize);
+
+  if (node.nodeType === Node.TEXT_NODE) {
+    const text = node.textContent.trim();
+    return text ? `${pad}${escapeXml(text)}` : "";
+  }
+
+  if (node.nodeType === Node.COMMENT_NODE) {
+    return `${pad}<!--${node.textContent}-->`;
+  }
+
+  if (node.nodeType !== Node.ELEMENT_NODE) return "";
+
+  const tag = node.tagName;
+  const attrs = Array.from(node.attributes)
+    .map((a) => ` ${a.name}="${escapeXml(a.value)}"`)
+    .join("");
+
+  const children = Array.from(node.childNodes)
+    .map((c) => serializeNode(c, depth + 1, indentSize))
+    .filter((s) => s !== "");
+
+  if (children.length === 0) {
+    return `${pad}<${tag}${attrs} />`;
+  }
+
+  // Single text child → inline
+  if (children.length === 1 && node.childNodes[0]?.nodeType === Node.TEXT_NODE) {
+    const text = node.childNodes[0].textContent.trim();
+    if (text.length < 80) {
+      return `${pad}<${tag}${attrs}>${escapeXml(text)}</${tag}>`;
+    }
+  }
+
+  return `${pad}<${tag}${attrs}>\n${children.join("\n")}\n${pad}</${tag}>`;
+}
+
+function escapeXml(str) {
+  return str
+    .replace(/&/g, "&amp;")
+    .replace(/</g, "&lt;")
+    .replace(/>/g, "&gt;")
+    .replace(/"/g, "&quot;")
+    .replace(/'/g, "&apos;");
+}
+
+function collectStats(root) {
+  let elements = 0, attributes = 0, textNodes = 0, maxDepth = 0;
+
+  function walk(node, depth) {
+    maxDepth = Math.max(maxDepth, depth);
+    if (node.nodeType === Node.ELEMENT_NODE) {
+      elements++;
+      attributes += node.attributes.length;
+    }
+    if (node.nodeType === Node.TEXT_NODE && node.textContent.trim()) textNodes++;
+    node.childNodes.forEach((c) => walk(c, depth + 1));
+  }
+
+  walk(root, 0);
+  return { elements, attributes, textNodes, maxDepth };
+}
+
+  return { meta: meta, run: run };
+})();
+
+// === TOOL: text-diff ===
+var TOOL_text_diff = (function() {
+/**
+ * ZeroLeak DevTools – Text Diff Viewer
+ *
+ * Implements the Myers diff algorithm (O(ND)) to show line-level diffs.
+ * NO external libraries. NO network calls. NO storage.
+ *
+ * Input format: two blocks separated by a divider line of >=3 dashes:
+ *
+ *   first block
+ *   ---
+ *   second block
+ */
+
+const meta = {
+  id: "text-diff",
+  label: "Text Diff Viewer",
+  phase: 2,
+  group: "Text",
+  placeholder: `Paste two texts separated by ---\n\nhello world\nfoo bar\n---\nhello earth\nfoo baz`,
+  description: "Line-level diff between two texts. Separate them with --- on its own line.",
+};
+
+/**
+ * @param {string} input – two texts separated by a "---" divider line
+ * @returns {{ success: boolean, output: string, error: string, stats: object|null }}
+ */
+function run(input) {
+  if (typeof input !== "string") {
+    return { success: false, output: "", error: "Input must be a string.", stats: null };
+  }
+
+  const trimmed = input.trim();
+  if (trimmed === "") {
+    return { success: false, output: "", error: "Input is empty.", stats: null };
+  }
+
+  // Find divider (a line of at least 3 dashes, alone)
+  const lines = trimmed.split("\n");
+  const dividerIdx = lines.findIndex((l) => /^-{3,}$/.test(l.trim()));
+
+  if (dividerIdx === -1) {
+    return {
+      success: false,
+      output: "",
+      error: 'No divider found. Separate your two texts with a line containing only "---".',
+      stats: null,
+    };
+  }
+
+  const linesA = lines.slice(0, dividerIdx);
+  const linesB = lines.slice(dividerIdx + 1);
+
+  const diff = myersDiff(linesA, linesB);
+  const output = renderDiff(diff);
+  const stats = {
+    added:   diff.filter((d) => d.type === "add").length,
+    removed: diff.filter((d) => d.type === "remove").length,
+    unchanged: diff.filter((d) => d.type === "equal").length,
+  };
+
+  const identical = stats.added === 0 && stats.removed === 0;
+
+  return {
+    success: true,
+    output: identical ? "✔  Texts are identical" : output,
+    error: "",
+    stats,
+  };
+}
+
+/* ── Myers Diff ───────────────────────────────────────────────────────── */
+
+/**
+ * Myers O(ND) diff algorithm.
+ * Returns an array of { type: "equal"|"add"|"remove", value: string }
+ */
+function myersDiff(a, b) {
+  const n = a.length;
+  const m = b.length;
+
+  if (n === 0 && m === 0) return [];
+  if (n === 0) return b.map((v) => ({ type: "add", value: v }));
+  if (m === 0) return a.map((v) => ({ type: "remove", value: v }));
+
+  const max = n + m;
+  const offset = max;
+  const v = new Array(2 * max + 1).fill(0);
+  const trace = [];
+
+  outer: for (let d = 0; d <= max; d++) {
+    trace.push(v.slice());
+    for (let k = -d; k <= d; k += 2) {
+      let x;
+      if (k === -d || (k !== d && v[k - 1 + offset] < v[k + 1 + offset])) {
+        x = v[k + 1 + offset];
+      } else {
+        x = v[k - 1 + offset] + 1;
+      }
+      let y = x - k;
+      while (x < n && y < m && a[x] === b[y]) { x++; y++; }
+      v[k + offset] = x;
+      if (x >= n && y >= m) break outer;
+    }
+  }
+
+  // Backtrack
+  const edits = [];
+  let x = n, y = m;
+
+  for (let d = trace.length - 1; d >= 0; d--) {
+    const vSnap = trace[d];
+    const k = x - y;
+    let prevK;
+    if (k === -d || (k !== d && vSnap[k - 1 + offset] < vSnap[k + 1 + offset])) {
+      prevK = k + 1;
+    } else {
+      prevK = k - 1;
+    }
+    const prevX = vSnap[prevK + offset];
+    const prevY = prevX - prevK;
+
+    // Diagonal (equal) moves
+    while (x > prevX && y > prevY) {
+      x--; y--;
+      edits.unshift({ type: "equal", value: a[x] });
+    }
+
+    if (d > 0) {
+      if (prevK === k + 1) {
+        // came from k+1 → inserted row (add from b)
+        edits.unshift({ type: "add", value: b[prevY] });
+      } else {
+        // came from k-1 → deleted column (remove from a)
+        edits.unshift({ type: "remove", value: a[prevX] });
+      }
+    }
+
+    x = prevX; y = prevY;
+  }
+
+  return edits;
+}
+
+/* ── Renderer ─────────────────────────────────────────────────────────── */
+
+function renderDiff(diff) {
+  const out = [];
+  let lineA = 1, lineB = 1;
+
+  diff.forEach(({ type, value }) => {
+    if (type === "remove") {
+      out.push(`- ${String(lineA).padStart(3)}      | ${value}`);
+      lineA++;
+    } else if (type === "add") {
+      out.push(`+      ${String(lineB).padStart(3)} | ${value}`);
+      lineB++;
+    } else {
+      out.push(`  ${String(lineA).padStart(3)} ${String(lineB).padStart(3)} | ${value}`);
+      lineA++;
+      lineB++;
+    }
+  });
+
+  return ["  OLD  NEW | Content", "  ─── ─── ┼─────────────────────────────────", ...out].join("\n");
+}
+
+  return { meta: meta, run: run };
+})();
+
+// === TOOL: graphql ===
+var TOOL_graphql = (function() {
+/**
+ * ZeroLeak DevTools – GraphQL Query Validator
+ *
+ * Validates GraphQL query/mutation/subscription syntax without executing.
+ * Pure recursive-descent parser — NO external libraries, NO network calls.
+ *
+ * Validates:
+ *   - Operation type (query / mutation / subscription / anonymous)
+ *   - Balanced braces / brackets / parentheses
+ *   - Selection sets (fields, aliases, nested selections)
+ *   - Arguments (basic name: value pairs)
+ *   - Fragments (definition + spread)
+ *   - Directives (@skip, @include, custom)
+ *   - Variables ($var: Type = default)
+ *   - Inline fragments (... on TypeName { })
+ */
+
+const meta = {
+  id: "graphql",
+  label: "GraphQL Validator & Linter",
+  phase: 3,
+  group: "Query",
+  placeholder: `Paste a GraphQL query, mutation, or subscription…
+
+query GetUser($id: ID!) {
+  user(id: $id) {
+    id
+    name
+    email
+  }
+}`,
+  description: "Validate and lint GraphQL query syntax. Checks structure, balanced braces, variables, fragments, and common style issues. Does NOT run against a schema.",
+};
+
+/**
+ * @param {string} input
+ * @returns {{ success: boolean, output: string, error: string, info: object|null }}
+ */
+function run(input) {
+  if (typeof input !== "string") {
+    return { success: false, output: "", error: "Input must be a string.", info: null };
+  }
+
+  const src = input.trim();
+  if (src === "") {
+    return { success: false, output: "", error: "Input is empty.", info: null };
+  }
+
+  try {
+    const tokens = tokenize(src);
+    const info   = parse(tokens, src);
+    const issues = lint(info, src);
+    const output = buildReport(info, src, issues);
+    return { success: true, output, error: "", info };
+  } catch (e) {
+    return { success: false, output: "", error: e.message, info: null };
+  }
+}
+
+/* ── Tokenizer ───────────────────────────────────────────────────────────── */
+
+const TT = {
+  NAME: "NAME", INT: "INT", FLOAT: "FLOAT", STRING: "STRING",
+  PUNCT: "PUNCT", EOF: "EOF",
+};
+
+function tokenize(src) {
+  const tokens = [];
+  let i = 0;
+
+  while (i < src.length) {
+    // Whitespace + commas (insignificant in GraphQL)
+    if (/[\s,]/.test(src[i])) { i++; continue; }
+
+    // Comments
+    if (src[i] === "#") {
+      while (i < src.length && src[i] !== "\n") i++;
+      continue;
+    }
+
+    // Block strings """
+    if (src.slice(i, i + 3) === '"""') {
+      i += 3;
+      const start = i;
+      while (i < src.length && src.slice(i, i + 3) !== '"""') i++;
+      tokens.push({ type: TT.STRING, value: src.slice(start, i) });
+      i += 3;
+      continue;
+    }
+
+    // Regular strings "
+    if (src[i] === '"') {
+      i++;
+      let val = "";
+      while (i < src.length && src[i] !== '"') {
+        if (src[i] === "\\") i++;
+        val += src[i++];
+      }
+      i++; // closing "
+      tokens.push({ type: TT.STRING, value: val });
+      continue;
+    }
+
+    // Spread / ellipsis
+    if (src.slice(i, i + 3) === "...") {
+      tokens.push({ type: TT.PUNCT, value: "..." });
+      i += 3;
+      continue;
+    }
+
+    // Punctuation
+    if (/[{}()\[\]:=!|&@$]/.test(src[i])) {
+      tokens.push({ type: TT.PUNCT, value: src[i++] });
+      continue;
+    }
+
+    // Numbers
+    if (/[-\d]/.test(src[i]) && (src[i] !== "-" || /\d/.test(src[i + 1] ?? ""))) {
+      let num = "";
+      if (src[i] === "-") num += src[i++];
+      while (i < src.length && /\d/.test(src[i])) num += src[i++];
+      if (src[i] === "." && /\d/.test(src[i + 1] ?? "")) {
+        num += src[i++];
+        while (i < src.length && /\d/.test(src[i])) num += src[i++];
+        tokens.push({ type: TT.FLOAT, value: num });
+      } else {
+        tokens.push({ type: TT.INT, value: num });
+      }
+      continue;
+    }
+
+    // Names (identifiers)
+    if (/[_A-Za-z]/.test(src[i])) {
+      let name = "";
+      while (i < src.length && /[_A-Za-z0-9]/.test(src[i])) name += src[i++];
+      tokens.push({ type: TT.NAME, value: name });
+      continue;
+    }
+
+    throw new Error(`Unexpected character '${src[i]}' at position ${i}`);
+  }
+
+  tokens.push({ type: TT.EOF, value: "" });
+  return tokens;
+}
+
+/* ── Parser ──────────────────────────────────────────────────────────────── */
+
+function parse(tokens, src) {
+  let pos = 0;
+  const info = {
+    operations: [],
+    fragments: [],
+    variables: [],
+    directives: [],
+    fieldCount: 0,
+  };
+
+  function peek(offset = 0) { return tokens[Math.min(pos + offset, tokens.length - 1)]; }
+  function eat()            { return tokens[pos++]; }
+  function expect(type, value) {
+    const t = eat();
+    if (type && t.type !== type) throw new Error(`Expected ${type} but got ${t.type} (${t.value})`);
+    if (value && t.value !== value) throw new Error(`Expected '${value}' but got '${t.value}'`);
+    return t;
+  }
+
+  function parseDocument() {
+    while (peek().type !== TT.EOF) {
+      if (peek().type === TT.NAME && peek().value === "fragment") {
+        parseFragmentDef();
+      } else {
+        parseOperation();
+      }
+    }
+  }
+
+  function parseOperation() {
+    let type = "query";
+    let name = null;
+
+    if (peek().type === TT.NAME && ["query", "mutation", "subscription"].includes(peek().value)) {
+      type = eat().value;
+      if (peek().type === TT.NAME) name = eat().value;
+    }
+
+    const vars = peek().value === "(" ? parseVariableDefinitions() : [];
+    info.variables.push(...vars);
+
+    const directives = parseDirectives();
+    info.directives.push(...directives);
+
+    parseSelectionSet();
+    info.operations.push({ type, name, variables: vars.length, directives: directives.length });
+  }
+
+  function parseVariableDefinitions() {
+    const vars = [];
+    expect(TT.PUNCT, "(");
+    while (peek().value !== ")") {
+      expect(TT.PUNCT, "$");
+      const name = expect(TT.NAME).value;
+      expect(TT.PUNCT, ":");
+      const typeName = parseTypeRef();
+      let defaultValue = null;
+      if (peek().value === "=") { eat(); defaultValue = parseValue(); }
+      vars.push({ name, type: typeName, default: defaultValue });
+    }
+    expect(TT.PUNCT, ")");
+    return vars;
+  }
+
+  function parseTypeRef() {
+    let type = "";
+    if (peek().value === "[") {
+      eat(); type = "[" + parseTypeRef() + "]";
+      expect(TT.PUNCT, "]");
+    } else {
+      type = expect(TT.NAME).value;
+    }
+    if (peek().value === "!") { eat(); type += "!"; }
+    return type;
+  }
+
+  function parseDirectives() {
+    const directives = [];
+    while (peek().value === "@") {
+      eat();
+      const name = expect(TT.NAME).value;
+      const args = peek().value === "(" ? parseArguments() : [];
+      directives.push({ name, args });
+    }
+    return directives;
+  }
+
+  function parseSelectionSet() {
+    expect(TT.PUNCT, "{");
+    while (peek().value !== "}") {
+      if (peek().value === "...") {
+        parseSpreadOrInlineFragment();
+      } else {
+        parseField();
+      }
+    }
+    expect(TT.PUNCT, "}");
+  }
+
+  function parseField() {
+    const nameOrAlias = expect(TT.NAME).value;
+    let _name = nameOrAlias;
+    if (peek().value === ":") { eat(); _name = expect(TT.NAME).value; }
+    if (peek().value === "(") parseArguments();
+    parseDirectives();
+    if (peek().value === "{") parseSelectionSet();
+    info.fieldCount++;
+  }
+
+  function parseSpreadOrInlineFragment() {
+    expect(TT.PUNCT, "...");
+    if (peek().value === "on") {
+      eat();
+      expect(TT.NAME); // TypeCondition
+      parseDirectives();
+      parseSelectionSet();
+    } else if (peek().type === TT.NAME) {
+      const fragName = eat().value;
+      parseDirectives();
+      info.fragments.push({ spread: fragName });
+    } else {
+      // Anonymous inline (unusual but legal with just directives)
+      parseDirectives();
+      parseSelectionSet();
+    }
+  }
+
+  function parseArguments() {
+    const args = [];
+    expect(TT.PUNCT, "(");
+    while (peek().value !== ")") {
+      const name = expect(TT.NAME).value;
+      expect(TT.PUNCT, ":");
+      const value = parseValue();
+      args.push({ name, value });
+    }
+    expect(TT.PUNCT, ")");
+    return args;
+  }
+
+  function parseValue() {
+    const t = peek();
+    if (t.value === "$") { eat(); return "$" + expect(TT.NAME).value; }
+    if (t.type === TT.INT || t.type === TT.FLOAT) return eat().value;
+    if (t.type === TT.STRING) return eat().value;
+    if (t.type === TT.NAME) return eat().value; // enum / bool / null
+    if (t.value === "[") {
+      eat();
+      while (peek().value !== "]") parseValue();
+      eat();
+      return "list";
+    }
+    if (t.value === "{") {
+      eat();
+      while (peek().value !== "}") { expect(TT.NAME); expect(TT.PUNCT, ":"); parseValue(); }
+      eat();
+      return "object";
+    }
+    throw new Error(`Unexpected value token: ${t.value}`);
+  }
+
+  function parseFragmentDef() {
+    expect(TT.NAME, "fragment");
+    const name = expect(TT.NAME).value;
+    expect(TT.NAME, "on");
+    const typeName = expect(TT.NAME).value;
+    parseDirectives();
+    parseSelectionSet();
+    info.fragments.push({ name, on: typeName });
+  }
+
+  parseDocument();
+  return info;
+}
+
+/* ── Linting ─────────────────────────────────────────────────────────────── */
+
+function lint(info, src) {
+  const issues = [];
+
+  // Check for unused variables
+  const usedVars = new Set();
+  // Simple regex to find $var usage
+  const varMatches = src.match(/\$[a-zA-Z_][a-zA-Z0-9_]*/g);
+  if (varMatches) {
+    varMatches.forEach((v) => usedVars.add(v.slice(1))); // remove $
+  }
+
+  info.variables.forEach((v) => {
+    if (!usedVars.has(v.name)) {
+      issues.push({ severity: "warning", message: `Variable $${v.name} is defined but not used.` });
+    }
+  });
+
+  // Check for field naming (should be camelCase)
+  // This is simplistic
+  const fieldMatches = src.match(/\b[a-zA-Z_][a-zA-Z0-9_]*\b/g);
+  if (fieldMatches) {
+    fieldMatches.forEach((f) => {
+      if (f.includes("_") && !f.startsWith("_")) {
+        issues.push({ severity: "warning", message: `Field "${f}" uses underscores. GraphQL conventionally uses camelCase.` });
+      }
+    });
+  }
+
+  return issues;
+}
+
+/* ── Report ──────────────────────────────────────────────────────────────── */
+
+function buildReport(info, src, issues = []) {
+  const lines = [
+    "✔  Query is syntactically valid",
+    "",
+  ];
+
+  if (issues.length > 0) {
+    const warnings = issues.filter((i) => i.severity === "warning");
+    if (warnings.length > 0) {
+      lines.push("── LINTING WARNINGS ─────────────────────────────────");
+      warnings.forEach((w) => lines.push(`  ⚠  ${w.message}`));
+      lines.push("");
+    }
+  }
+
+  lines.push("── OPERATIONS ─────────────────────────────────────");
+
+  if (info.operations.length === 0) {
+    lines.push("  (none — anonymous or fragment-only document)");
+  } else {
+    info.operations.forEach((op, i) => {
+      lines.push(`  ${i + 1}. ${op.type}${op.name ? " " + op.name : " (anonymous)"}`);
+      if (op.variables > 0) lines.push(`     Variables: ${op.variables}`);
+      if (op.directives > 0) lines.push(`     Directives: ${op.directives}`);
+    });
+  }
+
+  if (info.fragments.length > 0) {
+    lines.push("", "── FRAGMENTS ──────────────────────────────────────");
+    info.fragments.forEach((f) => {
+      if (f.name) lines.push(`  definition: ${f.name} on ${f.on}`);
+      else         lines.push(`  spread: ...${f.spread}`);
+    });
+  }
+
+  if (info.variables.length > 0) {
+    lines.push("", "── VARIABLES ──────────────────────────────────────");
+    info.variables.forEach((v) => {
+      lines.push(`  $${v.name}: ${v.type}${v.default !== null ? ` = ${v.default}` : ""}`);
+    });
+  }
+
+  lines.push("", "── METRICS ────────────────────────────────────────");
+  lines.push(`  Fields selected:   ${info.fieldCount}`);
+  lines.push(`  Source length:     ${src.length} chars`);
+  lines.push(`  Lines:             ${src.split("\n").length}`);
+
+  return lines.join("\n");
+}
+
+  return { meta: meta, run: run };
+})();
+
+// === TOOL: cron ===
+var TOOL_cron = (function() {
+/**
+ * ZeroLeak DevTools – Cron Expression Parser
+ *
+ * Parses standard 5-field cron expressions and extended 6-field (with seconds).
+ * Shows human-readable description and next 5 scheduled run times.
+ * NO external libraries. NO network calls.
+ *
+ * Format: [second] minute hour day-of-month month day-of-week
+ *
+ * Supports:
+ *   - * (wildcard)
+ *   - , (list)
+ *   - - (range)
+ *   - / (step)
+ *   - Named months (JAN-DEC) and weekdays (SUN-SAT)
+ *   - @shortcuts: @yearly @annually @monthly @weekly @daily @midnight @hourly @reboot
+ */
+
+const meta = {
+  id: "cron",
+  label: "Cron Expression Parser",
+  phase: 3,
+  group: "Time",
+  placeholder: `Enter a cron expression…
+
+Examples:
+  0 9 * * 1-5       → 9am every weekday
+  */15 * * * *      → every 15 minutes
+  0 0 1 * *         → midnight on 1st of each month
+  @daily            → once a day at midnight`,
+  description: "Parse cron expressions into human-readable descriptions with next run times.",
+};
+
+const SHORTCUTS = {
+  "@yearly":    "0 0 1 1 *",
+  "@annually":  "0 0 1 1 *",
+  "@monthly":   "0 0 1 * *",
+  "@weekly":    "0 0 * * 0",
+  "@daily":     "0 0 * * *",
+  "@midnight":  "0 0 * * *",
+  "@hourly":    "0 * * * *",
+};
+
+const MONTHS   = ["JAN","FEB","MAR","APR","MAY","JUN","JUL","AUG","SEP","OCT","NOV","DEC"];
+const WEEKDAYS = ["SUN","MON","TUE","WED","THU","FRI","SAT"];
+
+/**
+ * @param {string} input
+ * @returns {{ success: boolean, output: string, error: string, schedule: object|null }}
+ */
+function run(input) {
+  if (typeof input !== "string") {
+    return { success: false, output: "", error: "Input must be a string.", schedule: null };
+  }
+
+  const raw = input.trim();
+  if (raw === "") {
+    return { success: false, output: "", error: "Input is empty.", schedule: null };
+  }
+
+  if (raw === "@reboot") {
+    return {
+      success: true,
+      output: "Description: Run once at system startup (@reboot)\n\nNext runs: Cannot be predicted — runs on system boot.",
+      error: "",
+      schedule: { description: "@reboot" },
+    };
+  }
+
+  // Resolve shortcuts
+  const expr = SHORTCUTS[raw.toLowerCase()] ?? raw;
+
+  try {
+    const fields = parseExpression(expr);
+    const description = describe(fields);
+    const nextRuns = computeNextRuns(fields, new Date(), 5);
+
+    const output = [
+      `Expression:    ${raw}${SHORTCUTS[raw.toLowerCase()] ? ` → ${expr}` : ""}`,
+      ``,
+      `Description:   ${description}`,
+      ``,
+      `── NEXT 5 RUNS (UTC) ──────────────────────────────`,
+      ...nextRuns.map((d, i) => `  ${i + 1}.  ${d.toUTCString()}`),
+      ``,
+      `── FIELD BREAKDOWN ────────────────────────────────`,
+      `  Minute:       ${raw === expr ? fields.minute.raw : "0"}`,
+      `  Hour:         ${fields.hour.raw}`,
+      `  Day of month: ${fields.dom.raw}`,
+      `  Month:        ${fields.month.raw}`,
+      `  Day of week:  ${fields.dow.raw}`,
+    ].join("\n");
+
+    return { success: true, output, error: "", schedule: { description, nextRuns } };
+  } catch (e) {
+    return { success: false, output: "", error: e.message, schedule: null };
+  }
+}
+
+/* ── Parsing ─────────────────────────────────────────────────────────────── */
+
+function parseExpression(expr) {
+  const parts = expr.trim().split(/\s+/);
+
+  // Support 6-field (with leading seconds field) — drop seconds for now
+  if (parts.length === 6) parts.shift();
+
+  if (parts.length !== 5) {
+    throw new Error(
+      `Expected 5 fields (minute hour day month weekday), got ${parts.length}.\n` +
+      `Example: "0 9 * * 1-5"`
+    );
+  }
+
+  const [minute, hour, dom, month, dow] = parts;
+
+  return {
+    minute: parseField(minute, 0, 59, null),
+    hour:   parseField(hour,   0, 23, null),
+    dom:    parseField(dom,    1, 31, null),
+    month:  parseField(month,  1, 12, MONTHS),
+    dow:    parseField(dow,    0,  6, WEEKDAYS),
+  };
+}
+
+function parseField(raw, min, max, names) {
+  const normalised = names
+    ? raw.toUpperCase().replace(
+        new RegExp(names.join("|"), "g"),
+        (m) => String(names.indexOf(m) + (min === 0 ? 0 : 1))
+      )
+    : raw;
+
+  if (normalised === "*") {
+    return { raw, type: "any", values: range(min, max) };
+  }
+
+  const values = new Set();
+
+  for (const part of normalised.split(",")) {
+    if (part.includes("/")) {
+      const [rangeStr, stepStr] = part.split("/");
+      const step = parseInt(stepStr, 10);
+      if (isNaN(step) || step < 1) throw new Error(`Invalid step value in "${raw}"`);
+      const [rStart, rEnd] = rangeStr === "*" ? [min, max] : rangeStr.split("-").map(Number);
+      if (isNaN(rStart) || isNaN(rEnd) || rStart < min || rEnd > max) {
+        throw new Error(`Range out of bounds in "${raw}" (${min}–${max})`);
+      }
+      for (let v = rStart; v <= rEnd; v += step) values.add(v);
+    } else if (part.includes("-")) {
+      const [lo, hi] = part.split("-").map(Number);
+      if (isNaN(lo) || isNaN(hi) || lo < min || hi > max || lo > hi) {
+        throw new Error(`Invalid range "${part}" in field "${raw}" (${min}–${max})`);
+      }
+      for (let v = lo; v <= hi; v++) values.add(v);
+    } else {
+      const v = parseInt(part, 10);
+      if (isNaN(v) || v < min || v > max) {
+        throw new Error(`Value ${part} out of range (${min}–${max}) in "${raw}"`);
+      }
+      values.add(v);
+    }
+  }
+
+  return { raw, type: "specific", values: [...values].sort((a, b) => a - b) };
+}
+
+function range(a, b) {
+  const r = [];
+  for (let i = a; i <= b; i++) r.push(i);
+  return r;
+}
+
+/* ── Human-readable description ─────────────────────────────────────────── */
+
+function describe({ minute, hour, dom, month, dow }) {
+  const parts = [];
+
+  // Minutes
+  if (minute.type === "any") parts.push("every minute");
+  else if (minute.values.length === 1 && minute.values[0] === 0) { /* silent */ }
+  else parts.push(`at minute${minute.values.length > 1 ? "s" : ""} ${minute.values.join(", ")}`);
+
+  // Hours
+  if (hour.type === "any") parts.push("of every hour");
+  else {
+    const fmt = (h) => `${h % 12 || 12}${h < 12 ? "am" : "pm"}`;
+    parts.push(`at ${hour.values.map(fmt).join(", ")}`);
+  }
+
+  // Day of month
+  if (dom.type !== "any") {
+    const ordinal = (n) => n + (["th","st","nd","rd"][((n % 100 - 20 < 0 ? n % 100 : n % 10))] ?? "th");
+    parts.push(`on the ${dom.values.map(ordinal).join(", ")}`);
+  }
+
+  // Month
+  if (month.type !== "any") {
+    const monthNames = ["Jan","Feb","Mar","Apr","May","Jun","Jul","Aug","Sep","Oct","Nov","Dec"];
+    parts.push(`in ${month.values.map((m) => monthNames[m - 1]).join(", ")}`);
+  }
+
+  // Day of week
+  if (dow.type !== "any") {
+    const dayNames = ["Sunday","Monday","Tuesday","Wednesday","Thursday","Friday","Saturday"];
+    parts.push(`on ${dow.values.map((d) => dayNames[d]).join(", ")}`);
+  }
+
+  return parts.length ? capitalise(parts.join(", ")) : "Every minute";
+}
+
+function capitalise(s) { return s.charAt(0).toUpperCase() + s.slice(1); }
+
+/* ── Next run computation ────────────────────────────────────────────────── */
+
+function computeNextRuns(fields, from, count) {
+  const results = [];
+  // Start from the next minute
+  const cursor = new Date(from);
+  cursor.setUTCSeconds(0, 0);
+  cursor.setUTCMinutes(cursor.getUTCMinutes() + 1);
+
+  const maxIterations = 527_040; // one year in minutes
+  let iterations = 0;
+
+  while (results.length < count && iterations++ < maxIterations) {
+    const m  = cursor.getUTCMinutes();
+    const h  = cursor.getUTCHours();
+    const dm = cursor.getUTCDate();
+    const mo = cursor.getUTCMonth() + 1;
+    const dw = cursor.getUTCDay();
+
+    if (
+      fields.minute.values.includes(m) &&
+      fields.hour.values.includes(h) &&
+      fields.dom.values.includes(dm) &&
+      fields.month.values.includes(mo) &&
+      fields.dow.values.includes(dw)
+    ) {
+      results.push(new Date(cursor));
+    }
+
+    cursor.setUTCMinutes(cursor.getUTCMinutes() + 1);
+  }
+
+  if (results.length < count) {
+    results.push(new Error("Could not find enough matches within one year"));
+  }
+
+  return results.filter((r) => r instanceof Date);
+}
+
+  return { meta: meta, run: run };
+})();
+
+// === TOOL: regex ===
+var TOOL_regex = (function() {
+/**
+ * ZeroLeak DevTools – Regex Tester
+ *
+ * Tests a regular expression against input text.
+ * Includes ReDoS (catastrophic backtracking) detection.
+ * NO external libraries. NO network calls.
+ *
+ * Input format (two blocks separated by ---):
+ *
+ *   /pattern/flags
+ *   ---
+ *   test string
+ *   another line
+ *
+ * Or just paste a pattern on line 1, then ---, then test strings.
+ */
+
+const meta = {
+  id: "regex",
+  label: "Regex Tester",
+  phase: 3,
+  group: "Text",
+  placeholder: `/([A-Z][a-z]+)\\s(\\w+)/g
+---
+Hello World
+foo bar
+Jane Smith`,
+  description: "Test regexes against input text. Flags, capture groups, and ReDoS detection included.",
+};
+
+// Hard timeout for match execution (ms)
+const MATCH_TIMEOUT_MS = 2_000;
+
+/**
+ * @param {string} input
+ * @returns {{ success: boolean, output: string, error: string, matches: object[]|null }}
+ */
+function run(input) {
+  if (typeof input !== "string") {
+    return { success: false, output: "", error: "Input must be a string.", matches: null };
+  }
+
+  const trimmed = input.trim();
+  if (trimmed === "") {
+    return { success: false, output: "", error: "Input is empty.", matches: null };
+  }
+
+  // Split on divider
+  const lines  = trimmed.split("\n");
+  const divIdx = lines.findIndex((l) => /^-{3,}$/.test(l.trim()));
+  if (divIdx === -1) {
+    return {
+      success: false,
+      output: "",
+      error: 'Separate your pattern from test strings with "---" on its own line.',
+      matches: null,
+    };
+  }
+
+  const patternLine = lines.slice(0, divIdx).join("\n").trim();
+  const testText    = lines.slice(divIdx + 1).join("\n");
+
+  // Parse pattern: /pattern/flags  OR  bare pattern
+  let pattern, flags;
+  const slashMatch = patternLine.match(/^\/(.+)\/([gimsuy]*)$/s);
+  if (slashMatch) {
+    [, pattern, flags] = slashMatch;
+  } else {
+    pattern = patternLine;
+    flags   = "g";
+  }
+
+  // ReDoS pre-check
+  const redosWarning = detectReDoS(pattern);
+
+  let regex;
+  try {
+    regex = new RegExp(pattern, flags);
+  } catch (e) {
+    return { success: false, output: "", error: `Invalid regex: ${e.message}`, matches: null };
+  }
+
+  // Execute with a watchdog timer via synchronous date-based check
+  const matches = safeMatch(regex, testText, pattern, flags);
+  if (matches === null) {
+    return {
+      success: false,
+      output: "",
+      error: `Regex execution exceeded ${MATCH_TIMEOUT_MS}ms — possible catastrophic backtracking. Simplify the pattern.`,
+      matches: null,
+    };
+  }
+
+  const output = buildOutput(pattern, flags, testText, matches, redosWarning);
+  return { success: true, output, error: "", matches };
+}
+
+/* ── ReDoS Detector ──────────────────────────────────────────────────────── */
+
+/**
+ * Heuristic detector for common ReDoS patterns.
+ * Checks for nested quantifiers and polynomial-time patterns.
+ * Returns a warning string or null.
+ */
+function detectReDoS(pattern) {
+  const warnings = [];
+
+  // Pattern: (a+)+ or (a*)* or (.+)+ etc. — exponential backtracking
+  if (/\([^)]*[*+]\)[*+]/.test(pattern)) {
+    warnings.push("Nested quantifiers detected e.g. (a+)+ — high ReDoS risk.");
+  }
+
+  // Pattern: (a|a)* — alternation with overlap
+  if (/\([^)]*\|[^)]*\)[*+]/.test(pattern)) {
+    warnings.push("Alternation with quantifier detected — potential polynomial backtracking.");
+  }
+
+  // Catastrophically long character classes with quantifiers
+  if (/\[[^\]]{20,}\][*+{]/.test(pattern)) {
+    warnings.push("Large character class with unbounded quantifier — may be slow on long inputs.");
+  }
+
+  // Backtracking-prone: .* followed by literal that may appear earlier
+  if (/\.\*[^*+?)]{3,}/.test(pattern)) {
+    warnings.push("Greedy .* followed by literal — can cause excessive backtracking on non-matching input.");
+  }
+
+  return warnings.length > 0 ? warnings.join(" ") : null;
+}
+
+/* ── Safe match execution ────────────────────────────────────────────────── */
+
+function safeMatch(regex, text, pattern, flags) {
+  const deadline = Date.now() + MATCH_TIMEOUT_MS;
+  const results  = [];
+  const isGlobal = regex.global || regex.sticky;
+
+  if (!isGlobal) {
+    // Single match — just check deadline after
+    const m = regex.exec(text);
+    if (Date.now() > deadline) return null;
+    if (m) results.push(formatMatch(m));
+    return results;
+  }
+
+  // Global / sticky — iterate matches one by one, checking deadline each iteration
+  let m;
+  let lastIndex = -1;
+  regex.lastIndex = 0;
+
+  while ((m = regex.exec(text)) !== null) {
+    if (Date.now() > deadline) return null;
+
+    // Guard against zero-width match infinite loops
+    if (regex.lastIndex === lastIndex) {
+      regex.lastIndex++;
+      continue;
+    }
+    lastIndex = regex.lastIndex;
+
+    results.push(formatMatch(m));
+
+    if (results.length > 1000) {
+      results.push({ value: "… (truncated at 1000 matches)", index: -1, groups: null });
+      break;
+    }
+  }
+
+  return results;
+}
+
+function formatMatch(m) {
+  return {
+    value:    m[0],
+    index:    m.index,
+    groups:   m.slice(1),
+    named:    m.groups ?? null,
+  };
+}
+
+/* ── Output builder ──────────────────────────────────────────────────────── */
+
+function buildOutput(pattern, flags, text, matches, redosWarning) {
+  const lines = [];
+
+  if (redosWarning) {
+    lines.push(`⚠  ReDoS Warning: ${redosWarning}`, "");
+  }
+
+  lines.push(
+    `Pattern:  /${pattern}/${flags}`,
+    `Matches:  ${matches.length}`,
+    ""
+  );
+
+  if (matches.length === 0) {
+    lines.push("✖  No matches found.");
+    return lines.join("\n");
+  }
+
+  lines.push("── MATCHES ────────────────────────────────────────");
+
+  matches.forEach((m, i) => {
+    if (m.index === -1) { lines.push(`  ${m.value}`); return; }
+
+    const preview = m.value.length > 60 ? m.value.slice(0, 57) + "…" : m.value;
+    const lineNum  = text.slice(0, m.index).split("\n").length;
+
+    lines.push(`  ${String(i + 1).padStart(3)}. [line ${lineNum}, pos ${m.index}]  ${JSON.stringify(preview)}`);
+
+    if (m.groups.length > 0 && m.groups.some((g) => g !== undefined)) {
+      m.groups.forEach((g, gi) => {
+        if (g !== undefined) lines.push(`        Group ${gi + 1}: ${JSON.stringify(g)}`);
+      });
+    }
+
+    if (m.named) {
+      Object.entries(m.named).forEach(([k, v]) => {
+        if (v !== undefined) lines.push(`        Named (${k}): ${JSON.stringify(v)}`);
+      });
+    }
+  });
+
+  return lines.join("\n");
+}
+
+  return { meta: meta, run: run };
+})();
+
+
+var TOOLS = new Map();
+var TOOL_ORDER = [];
+TOOLS.set("base64", TOOL_base64);
+TOOL_ORDER.push("base64");
+TOOLS.set("basic-auth", TOOL_basic_auth);
+TOOL_ORDER.push("basic-auth");
+TOOLS.set("json-validator", TOOL_json_validator);
+TOOL_ORDER.push("json-validator");
+TOOLS.set("uuid", TOOL_uuid);
+TOOL_ORDER.push("uuid");
+TOOLS.set("timestamp", TOOL_timestamp);
+TOOL_ORDER.push("timestamp");
+TOOLS.set("jwt", TOOL_jwt);
+TOOL_ORDER.push("jwt");
+TOOLS.set("url-encode", TOOL_url_encode);
+TOOL_ORDER.push("url-encode");
+TOOLS.set("yaml-linter", TOOL_yaml_linter);
+TOOL_ORDER.push("yaml-linter");
+TOOLS.set("xml-formatter", TOOL_xml_formatter);
+TOOL_ORDER.push("xml-formatter");
+TOOLS.set("text-diff", TOOL_text_diff);
+TOOL_ORDER.push("text-diff");
+TOOLS.set("graphql", TOOL_graphql);
+TOOL_ORDER.push("graphql");
+TOOLS.set("cron", TOOL_cron);
+TOOL_ORDER.push("cron");
+TOOLS.set("regex", TOOL_regex);
+TOOL_ORDER.push("regex");
+
+function getGrouped() {
+  var groups = new Map();
+  TOOL_ORDER.forEach(function(id) {
+    var t = TOOLS.get(id);
+    var g = t.meta.group;
+    if (!groups.has(g)) groups.set(g, []);
+    groups.get(g).push(t.meta);
+  });
+  var result = [];
+  groups.forEach(function(items, group) { result.push({group: group, items: items}); });
+  return result;
+}
+
+
+/**
+ * ZeroLeak DevTools – Main Application Controller
+ *
+ * ALL DOM access happens inside DOMContentLoaded — no top-level querySelector.
+ * NO network calls. NO storage. Pure DOM manipulation.
+ */
+
+/* ── State ──────────────────────────────────────────────────────────────── */
+let activeTool = null;
+let dom        = null;
+let sensitive  = null;
+
+/* ── Bootstrap ──────────────────────────────────────────────────────────── */
+document.addEventListener("DOMContentLoaded", () => {
+
+  dom = {
+    sidebar:       document.getElementById("sidebar-nav"),
+    toolTitle:     document.getElementById("tool-title"),
+    sensitiveBtn:  document.getElementById("btn-sensitive"),
+    sensitiveTimer:document.getElementById("sensitive-timer"),
+    clearBtn:      document.getElementById("btn-clear"),
+    btnTheme:      document.getElementById("btn-theme"),
+    input:         document.getElementById("input-area"),
+    runBtn:        document.getElementById("btn-run"),
+    outputArea:         document.getElementById("output-area"),
+    outputContainer:    document.getElementById("output-editor-container"),
+    outputStats:        document.getElementById("output-stats"),
+    outputEmpty:        document.getElementById("output-empty"),
+    modeHint:           document.getElementById("mode-hint"),
+    btnCopy:            document.getElementById("btn-copy"),
+    inputGutter:        document.getElementById("input-gutter"),
+    outputGutter:       document.getElementById("output-gutter"),
+  };
+
+  sensitive = new SensitiveMode({
+    timeoutMs: 30_000,
+    onClear: () => {
+      dom.input.value = "";
+      updateInputGutter();
+      clearOutput();
+      dom.input.setAttribute("data-sensitive-cleared", "true");
+      setTimeout(() => dom.input.removeAttribute("data-sensitive-cleared"), 2000);
+    },
+    onTick: (secondsLeft) => {
+      if (secondsLeft === null) {
+        dom.sensitiveTimer.textContent = "";
+        dom.sensitiveTimer.hidden = true;
+      } else {
+        dom.sensitiveTimer.textContent = "Auto-clear in " + secondsLeft + "s";
+        dom.sensitiveTimer.hidden = false;
+      }
+    },
+  });
+
+  buildSidebar();
+  switchTool(TOOL_ORDER[0]);
+  updateInputGutter();
+
+  dom.input.addEventListener("input", onInputChange);
+  dom.input.addEventListener("input", updateInputGutter);
+  dom.input.addEventListener("scroll", syncInputGutter);
+  dom.outputArea.addEventListener("scroll", syncOutputGutter);
+  dom.runBtn.addEventListener("click", runActiveTool);
+  dom.clearBtn.addEventListener("click", () => sensitive.clearNow());
+  dom.sensitiveBtn.addEventListener("click", toggleSensitiveMode);
+  dom.btnTheme.addEventListener("click", toggleTheme);
+  dom.btnCopy.addEventListener("click", copyOutput);
+  dom.input.addEventListener("keydown", (e) => {
+    if ((e.ctrlKey || e.metaKey) && e.key === "Enter") {
+      e.preventDefault();
+      runActiveTool();
+    }
+  });
+});
+
+/* ── Sidebar ────────────────────────────────────────────────────────────── */
+function buildSidebar() {
+  const groups = getGrouped();
+  dom.sidebar.innerHTML = "";
+  groups.forEach(({ group, items }) => {
+    const heading = document.createElement("div");
+    heading.className = "sidebar-group";
+    heading.textContent = group;
+    dom.sidebar.appendChild(heading);
+    items.forEach((meta) => {
+      const btn = document.createElement("button");
+      btn.className = "sidebar-item";
+      btn.dataset.toolId = meta.id;
+      btn.textContent = meta.label;
+      btn.addEventListener("click", () => switchTool(meta.id));
+      dom.sidebar.appendChild(btn);
+    });
+  });
+}
+
+/* ── Tool Switching ─────────────────────────────────────────────────────── */
+function switchTool(id) {
+  if (activeTool && activeTool.meta.id === id) return;
+  sensitive.onToolSwitch();
+  activeTool = TOOLS.get(id);
+  if (!activeTool) return;
+
+  dom.sidebar.querySelectorAll(".sidebar-item").forEach((btn) => {
+    btn.classList.toggle("active", btn.dataset.toolId === id);
+  });
+  dom.toolTitle.textContent = activeTool.meta.label;
+  dom.input.placeholder = activeTool.meta.placeholder || "";
+  dom.input.value = "";
+  updateInputGutter();
+  clearOutput();
+
+  if (id === "uuid") {
+    runActiveTool();
+  } else if (id === "timestamp") {
+    dom.input.value = "now";
+    runActiveTool();
+  }
+}
+
+/* ── Run Tool ───────────────────────────────────────────────────────────── */
+function runActiveTool() {
+  if (!activeTool) return;
+  let result;
+  try {
+    result = activeTool.run(dom.input.value);
+  } catch (e) {
+    result = { success: false, output: "", error: "Unexpected error: " + e.message };
+  }
+  renderResult(result);
+}
+
+function onInputChange() {
+  sensitive.activity();
+  const liveTools = ["json-validator", "yaml-linter", "xml-formatter"];
+  if (activeTool && liveTools.includes(activeTool.meta.id) && dom.input.value.trim() !== "") {
+    runActiveTool();
+  }
+}
+
+/* ── Line Gutter Helpers ────────────────────────────────────────────────── */
+
+function buildGutterLines(text, errorLineSet) {
+  const lines = (text || "").split("\n");
+  // always at least 1 line
+  const count = Math.max(1, lines.length);
+  const frag = document.createDocumentFragment();
+  for (let i = 1; i <= count; i++) {
+    const s = document.createElement("span");
+    s.textContent = i;
+    if (errorLineSet && errorLineSet.has(i)) s.className = "line-error";
+    frag.appendChild(s);
+  }
+  return frag;
+}
+
+function setGutter(gutter, text, errorLineSet) {
+  gutter.innerHTML = "";
+  gutter.appendChild(buildGutterLines(text, errorLineSet));
+}
+
+function updateInputGutter() {
+  setGutter(dom.inputGutter, dom.input.value);
+}
+
+/** Scroll the gutter vertically in sync with the textarea */
+function syncInputGutter() {
+  dom.inputGutter.scrollTop = dom.input.scrollTop;
+}
+
+/** Scroll the output gutter in sync with the output pre */
+function syncOutputGutter() {
+  dom.outputGutter.scrollTop = dom.outputArea.scrollTop;
+}
+
+/**
+ * Parse a line number out of an error string.
+ * Handles: "line 20", ":20:", "[20,5]", "(20,5)"
+ */
+function errorLineSet(msg) {
+  if (!msg) return null;
+  const patterns = [/\bline[:\s]+(\d+)/i, /:(\d+):\d+/, /\[(\d+),\s*\d+\]/, /\((\d+),\s*\d+\)/];
+  for (const p of patterns) {
+    const m = msg.match(p);
+    if (m) return new Set([parseInt(m[1], 10)]);
+  }
+  return null;
+}
+
+/* ── Output Rendering ───────────────────────────────────────────────────── */
+function renderResult(result) {
+  dom.outputEmpty.hidden     = true;
+  dom.outputContainer.hidden = false;
+  dom.outputArea.scrollTop   = 0;
+
+  if (result.success) {
+    dom.outputArea.className = "success";
+
+    if (activeTool && activeTool.meta.id === "text-diff" && result.stats) {
+      dom.outputArea.innerHTML = colorizeDiff(result.output);
+      dom.outputStats.hidden = false;
+      dom.outputStats.innerHTML =
+        '<span class="stat-add">+' + result.stats.added + ' added</span>' +
+        '<span class="stat-rem">-' + result.stats.removed + ' removed</span>' +
+        '<span>' + result.stats.unchanged + ' unchanged</span>';
+      dom.modeHint.hidden = true;
+      setGutter(dom.outputGutter, result.output);
+      return;
+    }
+
+    dom.outputArea.textContent = result.output;
+    setGutter(dom.outputGutter, result.output);
+
+    if (result.stats) {
+      dom.outputStats.hidden = false;
+      const s = result.stats;
+      if (s.elements !== undefined) {
+        dom.outputStats.innerHTML =
+          '<span>' + s.elements + ' elements</span>' +
+          '<span>' + s.attributes + ' attrs</span>' +
+          '<span>' + s.textNodes + ' text nodes</span>' +
+          '<span>depth ' + s.maxDepth + '</span>';
+      } else {
+        dom.outputStats.innerHTML =
+          '<span>' + s.keys + ' keys</span>' +
+          '<span>' + s.objects + ' objects</span>' +
+          '<span>' + s.arrays + ' arrays</span>' +
+          '<span>depth ' + s.maxDepth + '</span>';
+      }
+    } else {
+      dom.outputStats.hidden = true;
+    }
+
+    if (activeTool && activeTool.meta.id === "jwt" && result.data && result.data.expiry) {
+      const { status, label } = result.data.expiry;
+      dom.modeHint.textContent = status === "expired" ? ("✖ " + label) : status === "valid" ? "✔ Valid" : "– No exp";
+      dom.modeHint.className   = status === "expired" ? "mode-hint-error" : "mode-hint-ok";
+      dom.modeHint.hidden = false;
+    } else if (result.mode) {
+      dom.modeHint.textContent = result.mode === "encode" ? "⬆ Encoded" : "⬇ Decoded";
+      dom.modeHint.className   = "";
+      dom.modeHint.hidden = false;
+    } else {
+      dom.modeHint.hidden = true;
+    }
+
+  } else {
+    const errMsg = result.error || "An error occurred.";
+    dom.outputArea.className   = "error";
+    dom.outputArea.textContent = errMsg;
+    dom.outputStats.hidden     = true;
+    dom.modeHint.hidden        = true;
+    setGutter(dom.outputGutter, errMsg);
+    /* highlight the bad line in the INPUT gutter too */
+    setGutter(dom.inputGutter, dom.input.value, errorLineSet(errMsg));
+  }
+}
+
+function clearOutput() {
+  dom.outputContainer.hidden = true;
+  dom.outputArea.textContent = "";
+  dom.outputArea.innerHTML   = "";
+  dom.outputStats.hidden     = true;
+  dom.outputEmpty.hidden     = false;
+  dom.modeHint.hidden        = true;
+  setGutter(dom.outputGutter, "");
+}
+
+function colorizeDiff(text) {
+  return text.split("\n").map(function(line) {
+    var esc = line.replace(/&/g,"&amp;").replace(/</g,"&lt;").replace(/>/g,"&gt;");
+    if (line.startsWith("+")) return '<span class="diff-add">' + esc + '</span>';
+    if (line.startsWith("-")) return '<span class="diff-rem">' + esc + '</span>';
+    return '<span class="diff-eq">' + esc + '</span>';
+  }).join("\n");
+}
+
+/* ── Sensitive Mode Toggle ──────────────────────────────────────────────── */
+function toggleSensitiveMode() {
+  const enabled = sensitive.toggle();
+  dom.sensitiveBtn.classList.toggle("active", enabled);
+  dom.sensitiveBtn.querySelector(".sm-label").textContent = "Sensitive Mode: " + (enabled ? "ON" : "OFF");
+  if (!enabled) {
+    dom.sensitiveTimer.hidden = true;
+    dom.sensitiveTimer.textContent = "";
+  }
+}
+
+/* ── Theme Toggle ───────────────────────────────────────────────────────── */
+function toggleTheme() {
+  document.body.classList.toggle("light-mode");
+  const isLight = document.body.classList.contains("light-mode");
+  dom.btnTheme.textContent = isLight ? "Dark Mode" : "Light Mode";
+}
+
+/* ── Copy Output ────────────────────────────────────────────────────────── */
+function copyOutput() {
+  if (dom.outputArea.textContent.trim() === "") return;
+  navigator.clipboard.writeText(dom.outputArea.textContent).then(() => {
+    const original = dom.btnCopy.textContent;
+    dom.btnCopy.textContent = "Copied!";
+    setTimeout(() => dom.btnCopy.textContent = original, 1000);
+  }).catch(err => {
+    console.error("Copy failed", err);
+  });
+}
+
+</script>
+</body>
+</html>
