@@ -4,14 +4,6 @@
 
 It is designed for security-conscious developers who need a fast, local alternative to web-based inspector tools. The app runs entirely from `index.html`/`zeroleak-devtools.html`, with no backend, no network traffic, and no persistent storage.
 
-## Repository name suggestion
-
-- `zeroleak-devtools`
-
-## Repository description suggestion
-
-Offline browser developer toolbox for sensitive auth, payload, and format tools. No network, no storage, no telemetry.
-
 ## Why this exists
 
 Developers often need to inspect, transform, or validate sensitive data such as JWTs, JSON, YAML, GraphQL, and auth headers. Many existing tools are web-based and can raise privacy concerns.
